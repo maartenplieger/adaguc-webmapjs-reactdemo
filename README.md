@@ -11,4 +11,4 @@ npm install && npm run build && firefox ./dist/index.html
 
 ## See it in action at 
 
-http://geoservices.knmi.nl/adaguc-webmapjs-demo/
+https://geoservices.knmi.nl/adaguc-webmapjs-demo/
