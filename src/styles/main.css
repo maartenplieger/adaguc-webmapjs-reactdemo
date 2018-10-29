@@ -1,0 +1,35 @@
+body { 
+  margin: 0;
+  overflow:hidden; 
+}
+
+#webmap1 {
+    position: absolute;
+    left:0px;
+    top:0px;
+    padding:0px;
+    margin:0px;
+    border:none;
+}
+
+#app {
+    position: absolute;
+    left:0px;
+    top:0px;
+}
+
+.title {
+    padding:10px;
+    margin:0px; 
+    color:#01547D;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 38px;
+    letter-spacing: 2px;
+    word-spacing: 2px;
+    font-weight: normal;
+    text-decoration: none;
+    font-style: normal;
+    font-variant: normal;
+    text-transform: none;
+    display:inline-block;
+}
