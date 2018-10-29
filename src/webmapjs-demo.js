@@ -26,13 +26,13 @@ $(function() {
   /* Tiled baselayer */
   var baseLayer = new WMJSLayer({ name: 'OSM_Blossom_NL', title: 'ESRI ArcGIS satellite map (Mercator/LatLon)', type: 'twms', enabled: true });
         
-  var topLayer = new WMJSLayer({ service:"http://geoservices.knmi.nl/cgi-bin/worldmaps.cgi?", name:"world_line", format:"image/png",  title:"World country borders",
+  var topLayer = new WMJSLayer({ service:"//geoservices.knmi.nl/cgi-bin/worldmaps.cgi?", name:"world_line", format:"image/png",  title:"World country borders",
     keepOnTop:true,
     enabled:true
   });
 
   var radarlayer = new WMJSLayer({
-    service:'http://geoservices.knmi.nl/cgi-bin/RADNL_OPER_R___25PCPRR_L3.cgi?',
+    service:'//geoservices.knmi.nl/cgi-bin/RADNL_OPER_R___25PCPRR_L3.cgi?',
     name:'RADNL_OPER_R___25PCPRR_L3_COLOR'
   });
   
