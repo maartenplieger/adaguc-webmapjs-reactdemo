@@ -9,6 +9,14 @@ cd adaguc-webmapjs-demo
 npm install && npm run build && firefox ./dist/index.html
 ```
 
+## To develop 
+
+To enable hot reloading of the demo application:
+```
+npm run start
+```
+
+
 ## See it in action at 
 
 https://geoservices.knmi.nl/adaguc-webmapjs-demo/
