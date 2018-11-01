@@ -2,6 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 const HtmlWebPackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+require("babel-register");
 
 module.exports = {
   entry: './src/webmapjs-demo.js',
@@ -52,3 +53,6 @@ module.exports = {
     })
   ]
 };
+module.loaders = [
+  { test: /\.js$/, exclude: /node_modules/, use: "babel-loader" }
+]
