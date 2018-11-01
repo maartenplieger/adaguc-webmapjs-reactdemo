@@ -10,8 +10,9 @@ module.exports = {
   mode:'development',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'adaguc-webmapjs-demo.js'
+    filename: 'adaguc-webmapjs-reactdemo.js'
   },
+  devtool: 'source-map',
   module: {
     rules: [
       {

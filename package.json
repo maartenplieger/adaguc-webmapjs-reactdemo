@@ -1,5 +1,5 @@
 {
-  "name": "adaguc-webmapjs-demo",
+  "name": "adaguc-webmapjs-reactdemo",
   "version": "3.2.2",
   "description": "Interactive maps library, capable of parsing a OGC WMS getcapabilities and display geographical layers",
   "main": "webmapjs-demo.js",
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/maartenplieger/adaguc-webmapjs-demo.git"
+    "url": "git+ssh://git@github.com/maartenplieger/adaguc-webmapjs-reactdemo.git"
   },
   "keywords": [
     "OGC",
@@ -35,7 +35,8 @@
     "proj4": "^2.5.0"
   },
   "dependencies": {
-    "adaguc-webmapjs": "^3.2.3"
+    "adaguc-webmapjs": "^3.2.3",
+    "throttle-debounce": "^2.0.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.1.2",

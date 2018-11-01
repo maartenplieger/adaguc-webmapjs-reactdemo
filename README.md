@@ -1,11 +1,11 @@
-# adaguc-webmapjs-demo
+# adaguc-webmapjs-reactdemo
 This is an OGC WMS client library, capable of parsing a service getcapabilities and display geographical layers in a map component
 
-## Clone adaguc-webmapjs-demo
+## Clone adaguc-webmapjs-reactdemo
 
 ```
-git clone https://github.com/maartenplieger/adaguc-webmapjs-demo.git
-cd adaguc-webmapjs-demo
+git clone https://github.com/maartenplieger/adaguc-webmapjs-reactdemo.git
+cd adaguc-webmapjs-reactdemo
 npm install
 ```
 
@@ -25,4 +25,4 @@ npm run start
 
 ## See it in action at 
 
-https://geoservices.knmi.nl/adaguc-webmapjs-demo/
+https://geoservices.knmi.nl/adaguc-webmapjs-reactdemo/
