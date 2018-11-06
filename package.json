@@ -2,12 +2,12 @@
   "name": "adaguc-webmapjs-reactdemo",
   "version": "3.2.2",
   "description": "Interactive maps library, capable of parsing a OGC WMS getcapabilities and display geographical layers",
-  "main": "webmapjs-demo.js",
+  "main": "main.js",
   "scripts": {
     "test": "echo \"ok\"",
     "dev": "webpack --mode development",
     "build": "webpack --mode production",
-    "start": "webpack-dev-server --mode development --open"
+    "start": "webpack-dev-server --mode development --port 4000"
   },
   "repository": {
     "type": "git",
@@ -36,6 +36,8 @@
   },
   "dependencies": {
     "adaguc-webmapjs": "^3.2.3",
+    "immer": "^1.7.4",
+    "reactstrap": "^6.5.0",
     "throttle-debounce": "^2.0.1"
   },
   "devDependencies": {
@@ -53,6 +55,8 @@
     "mini-css-extract-plugin": "^0.4.4",
     "react": "^16.6.0",
     "react-dom": "^16.6.0",
+    "react-redux": "^5.1.0",
+    "redux": "^4.0.1",
     "source-map": "^0.7.3",
     "webpack": "^4.22.0",
     "webpack-cli": "^3.1.2",

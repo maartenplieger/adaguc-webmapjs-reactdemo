@@ -5,7 +5,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 require("babel-register");
 
 module.exports = {
-  entry: './src/webmapjs-demo.js',
+  entry: './src/main.js',
   cache: false,
   mode:'development',
   output: {
@@ -39,6 +39,9 @@ module.exports = {
         loader: 'file-loader?name=[name].[ext]'  // <-- retain original file name
       }
     ]
+  },
+  resolve: {
+    extensions: ['.js', '.jsx']
   },
   externals:{
     jquery: 'jQuery'

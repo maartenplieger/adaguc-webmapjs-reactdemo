@@ -55,8 +55,10 @@ import ReactWMJSLayer from './ReactWMJSLayer.jsx';
 export default class ReactWMJSMap extends Component {
   constructor (props) {
     super(props);
-    this.adaguc = {};
-    this.adaguc.webMapJSCreated = false;
+    this.adaguc = {
+      webMapJSCreated:false,
+      baseLayers:[]
+    };
     this.resize = this.resize.bind(this);
     this._handleWindowResize = this._handleWindowResize.bind(this);
     this.drawDebounced = debounce(600, this.drawDebounced);
@@ -74,58 +76,70 @@ export default class ReactWMJSMap extends Component {
     this.adaguc.webMapJS.resumeEvent('onmaploadingcomplete');
   };
 
-  shouldComponentUpdate (nextProps, nextState) {
-    console.log('shouldComponentUpdate');
-    if (this.props.layers.length !== nextProps.layers.length) return true;
-    for (let j = 0; j < this.props.layers.length; j++) {
-      if (nextProps.layers[j].name !== this.props.layers[j].name ||
-          nextProps.layers[j].service !== this.props.layers[j].service) {
-        return true;
+  // shouldComponentUpdate (nextProps, nextState) {
+  //   console.log('shouldComponentUpdate');
+  //   if (this.props.layers) {
+  //     if (this.props.layers.length !== nextProps.layers.length) return true;
+  //     for (let j = 0; j < this.props.layers.length; j++) {
+  //       if (nextProps.layers[j].name !== this.props.layers[j].name ||
+  //           nextProps.layers[j].service !== this.props.layers[j].service) {
+  //         return true;
+  //       }
+  //     }
+  //   }
+
+  //   /* BBOX prop updates */
+  //   const currentBbox = this.props.bbox;
+  //   const nextBbox = nextProps.bbox;
+  //   /* Compare each entry in currentBbox with entries in nextBbox. Return true when at least one differs. */
+  //   if (currentBbox && currentBbox.reduce((acc, value, index) => {
+  //     return acc || value !== nextBbox[index];
+  //   }, false)) {
+  //     this.adaguc.webMapJS.suspendEvent('onupdatebbox');
+  //     this.adaguc.webMapJS.setBBOX(nextProps.bbox);
+  //     console.log('setbbox', nextProps.bbox);
+  //     this.drawDebounced(); // After 1000 ms also do a draw to load the data
+  //     this.adaguc.webMapJS.resumeEvent('onupdatebbox');
+  //   }
+
+  //   console.log('no changes detected');
+
+  //   return false;
+  // }
+
+  // componentDidUpdate (prevProps) {
+  //   if (this.props.layers && this.props.layers.length) {
+  //     this.adaguc.webMapJS.removeAllLayers();
+  //     for (let j = 0; j < this.props.layers.length; j++) {
+  //       this.adaguc.webMapJS.addLayer(this.props.layers[j]);
+  //       if (this.props.layerReadyCallback) {
+  //         this.props.layers[j].parseLayer(
+  //           (wmjsLayer) => {
+  //             this.props.layerReadyCallback(wmjsLayer, this.adaguc.webMapJS);
+  //           },
+  //           undefined, 'ReactWebMapJS::componentDidUpdate');
+  //       }
+  //     }
+  //   }
+  // }
+
+  getWMJSLayerFromReactLayer(wmjsLayers, reactWebMapJSLayer, index) {
+    if (reactWebMapJSLayer.props.service && reactWebMapJSLayer.props.name) {
+      console.log('getWMJSLayerFromReactLayer, checking index', index, wmjsLayers);
+      if (index >=0 && index < wmjsLayers.length) {
+        return wmjsLayers[index];
       }
     }
-
-    /* BBOX prop updates */
-    const currentBbox = this.props.bbox;
-    const nextBbox = nextProps.bbox;
-    /* Compare each entry in currentBbox with entries in nextBbox. Return true when at least one differs. */
-    if (currentBbox && currentBbox.reduce((acc, value, index) => {
-      return acc || value !== nextBbox[index];
-    }, false)) {
-      this.adaguc.webMapJS.suspendEvent('onupdatebbox');
-      this.adaguc.webMapJS.setBBOX(nextProps.bbox);
-      console.log('setbbox', nextProps.bbox);
-      this.drawDebounced(); // After 1000 ms also do a draw to load the data
-      this.adaguc.webMapJS.resumeEvent('onupdatebbox');
-    }
-
-    return false;
-  }
-
-  componentDidUpdate (prevProps) {
-    if (this.props.layers && this.props.layers.length) {
-      this.adaguc.webMapJS.removeAllLayers();
-      for (let j = 0; j < this.props.layers.length; j++) {
-        this.adaguc.webMapJS.addLayer(this.props.layers[j]);
-        if (this.props.layerReadyCallback) {
-          this.props.layers[j].parseLayer(
-            (wmjsLayer) => {
-              this.props.layerReadyCallback(wmjsLayer, this.adaguc.webMapJS);
-            },
-            undefined, 'ReactWebMapJS::componentDidUpdate');
-        }
-      }
-    }
-  }
-
-  getWMJSLayerFromReactLayer(wmjsLayers, reactWebMapJSLayer) {
-    if (reactWebMapJSLayer.service && reactWebMapJSLayer.name) {
-      for (let wmjsLayer in wmjsLayers) {
-        if (wmjsLayer.reactWebMapJSLayer === reactWebMapJSLayer) {
-          return wmjsLayers;
-        }
-      }
-    }
+    console.log('Unable to find layer with index ', index, reactWebMapJSLayer)
     return null;
+    // if (reactWebMapJSLayer.service && reactWebMapJSLayer.name) {
+    //   for (let wmjsLayer in wmjsLayers) {
+    //     if (wmjsLayer.reactWebMapJSLayer === reactWebMapJSLayer) {
+    //       return wmjsLayers;
+    //     }
+    //   }
+    // }
+    // return null;
   }
 
   checkAdaguc () {
@@ -147,7 +161,7 @@ export default class ReactWMJSMap extends Component {
     }
 
     this.resize();
-    this.componentDidUpdate();
+    // this.componentDidUpdate();
     this.adaguc.webMapJS.draw();
     window.addEventListener('resize', this._handleWindowResize);
 
@@ -160,40 +174,68 @@ export default class ReactWMJSMap extends Component {
   }
 
   checkNewProps (props) {
-    this.checkAdaguc();
+    console.log('checkNewProps', props);
+
     if (!props) return;
     /* Check children */
     if (props.children) {
       const { children } = props;
       if (children !== this.currentWMJSProps.children) {
         this.currentWMJSProps.children = children;
-        console.log('Checking children');
         let wmjsLayers = this.adaguc.webMapJS.getLayers();
-        React.Children.forEach(children, (child) => {
+        let wmjsBaseLayers = this.adaguc.webMapJS.getBaseLayers();
+        let adagucWMJSLayerIndex = 0;
+        let adagucWMJSBaseLayerIndex = 0;
+        let needsRedraw = false;
+        React.Children.forEach(children, (child, i) => {
           if (child.type) {
             /* Check layers */
             if (typeof child.type === typeof ReactWMJSLayer) {
-              console.log(child.props);
-              let wmjsLayer = this.getWMJSLayerFromReactLayer(wmjsLayers, child);
-              if (wmjsLayer === null) {
-                wmjsLayer = new WMJSLayer({
-                  service: child.props.service,
-                  name: child.props.name
-                });
-                wmjsLayer.reactWebMapJSLayer = child;
-                console.log(wmjsLayer);
-                this.adaguc.webMapJS.addLayer(wmjsLayer);
-              }              
+              
+              if (child.props.baseLayer) {
+                adagucWMJSBaseLayerIndex++;
+                let wmjsLayer = this.getWMJSLayerFromReactLayer(wmjsBaseLayers, child, adagucWMJSBaseLayerIndex - 1);
+                if (wmjsLayer === null) {
+                  wmjsLayer = new WMJSLayer({...child.props});
+                  this.adaguc.baseLayers.push(wmjsLayer);
+                  wmjsLayer.reactWebMapJSLayer = child;
+                  this.adaguc.webMapJS.setBaseLayers(this.adaguc.baseLayers);
+                }       
+              } else {
+                adagucWMJSLayerIndex++;
+                let wmjsLayer = this.getWMJSLayerFromReactLayer(wmjsLayers, child, adagucWMJSLayerIndex - 1);
+                if (wmjsLayer === null) {                  
+                  wmjsLayer = new WMJSLayer({...child.props});
+                  wmjsLayer.reactWebMapJSLayer = child;
+                  console.log('addLayer', wmjsLayer);
+                  this.adaguc.webMapJS.addLayer(wmjsLayer);
+                } else {
+                  console.log('WMJSLayer found, updating props',child.props);
+                  if (wmjsLayer.name !== child.props.name) {wmjsLayer.setName(child.props.name);needsRedraw = true;}
+                  if (wmjsLayer.opacity !== child.props.opacity) {wmjsLayer.setOpacity(child.props.opacity);needsRedraw = false;}
+                  if (wmjsLayer.currentStyle !== child.props.style) {wmjsLayer.setStyle(child.props.style);needsRedraw = true;}
+                }  
+              }       
             }
           }
         });
+        if (needsRedraw) {
+          this.adaguc.webMapJS.draw();
+        }
       }
     }
 
   }
 
+  shouldComponentUpdate (nextProps) {
+    console.log('shouldComponentUpdate', this.props);
+    this.checkNewProps(nextProps);
+    return false;
+  }
+
   componentDidMount () {
     console.log('componentDidMount', this.props);
+    this.checkAdaguc();
     this.checkNewProps(this.props);
     
   }
