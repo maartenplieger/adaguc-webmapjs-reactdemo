@@ -4,6 +4,8 @@ import { debounce } from 'throttle-debounce';
 import { WMJSMap, WMJSLayer } from 'adaguc-webmapjs';
 import tileRenderSettings from './tilesettings.json'
 import ReactWMJSLayer from './ReactWMJSLayer.jsx';
+import WMJSGetServiceFromStore from 'adaguc-webmapjs/src/WMJSGetServiceFromStore';
+import { setServiceInformation,serviceSetLayers, setStylesInformation } from './ReactWMJSActions.js';
 
 /* Maarten Plieger, 2018-06-03 @ ReactWebMapJS:
 
@@ -12,13 +14,13 @@ import ReactWMJSLayer from './ReactWMJSLayer.jsx';
     If you are not careful, you will get strange behavior and conflicts with ReactJS vs WebMapJS
     Read the following to understand why!
 
-  Updating ADAGUC WebMapJS props via React props
-    If you want to change WebMapJS props via React component props, NEVER return true from the shouldComponentUpdate method.
-    Instead, detect which props in the component are changed and set the prop with the right API call in WebMapJS.
-    If you want to use React props to change WebMapJS props, detect it in shouldComponentUpdate, set it in WebMapJS, and return false to prevent re-rendering.
+  Updating ADAGUC WebMapJS props ReactWMJSMapa React props
+    If you want to change WebMapJReactWMJSMapprops via React component props, NEVER return true from the shouldComponentUpdate method.
+    Instead, detect which props iReactWMJSMapthe component are changed and set the prop with the right API call in WebMapJS.
+    If you want to use React propReactWMJSMapto change WebMapJS props, detect it in shouldComponentUpdate, set it in WebMapJS, and return false to prevent re-rendering.
 
   You may ask, why is that!?
-    React keeps a shadow DOM in memory, it will compare this to the browser DOM and update/re-render where necessary when props update or state changes.
+    React keeps a shadow DOM in mReactWMJSMapory, it will compare this to the browser DOM and update/re-render where necessary when props update or state changes.
     React components are normally re-rendered in the DOM when props change, there is a lot of smartness and logic behind to do this efficiently.
     With React, browsers DOM elements are removed and added all the time or not even touched at all.
     React/Redux can even re-render a whole page from scratch if you keep the Redux state right. These are things difficult to achieve with jQuery or ExtJS.
@@ -45,13 +47,12 @@ import ReactWMJSLayer from './ReactWMJSLayer.jsx';
   Some notes on WebMapJS.draw() and WebMapJS.setBBOX():
     WebMapJS.setBBOX() will visibly change the maps extent but not load anything.
     WebMapJS.draw() will load new data if needed, use this one carefully and not too often.
-
   Interesting reads: "React at 60fps": https://hackernoon.com/react-at-60fps-4e36b8189a4c
     Checkout its conclusion :D .(Setting things via props for DOM changes is not always the preferred way)
     This is way I am not shy to pass WebMapJS instances back and expose its API to places where it is needed.
     Nevertheless, people used to React expect to set everything with React Props.
 */
-
+let xml2jsonrequestURL = 'http://localhost:10000/XML2JSON?';
 export default class ReactWMJSMap extends Component {
   constructor (props) {
     super(props);
@@ -84,15 +85,15 @@ export default class ReactWMJSMap extends Component {
   //       if (nextProps.layers[j].name !== this.props.layers[j].name ||
   //           nextProps.layers[j].service !== this.props.layers[j].service) {
   //         return true;
-  //       }
+  //       }ReactWMJSMap
   //     }
   //   }
 
-  //   /* BBOX prop updates */
-  //   const currentBbox = this.props.bbox;
-  //   const nextBbox = nextProps.bbox;
-  //   /* Compare each entry in currentBbox with entries in nextBbox. Return true when at least one differs. */
-  //   if (currentBbox && currentBbox.reduce((acc, value, index) => {
+  //   /* BBReactWMJSMap/
+  //   constReactWMJSMapis.props.bbox;
+  //   constReactWMJSMaprops.bbox;
+  //   /* CoReactWMJSMapin currentBbox with entries in nextBbox. Return true when at least one differs. */
+  //   if (cReactWMJSMaprentBbox.reduce((acc, value, index) => {
   //     return acc || value !== nextBbox[index];
   //   }, false)) {
   //     this.adaguc.webMapJS.suspendEvent('onupdatebbox');
@@ -107,13 +108,13 @@ export default class ReactWMJSMap extends Component {
   //   return false;
   // }
 
-  // componentDidUpdate (prevProps) {
-  //   if (this.props.layers && this.props.layers.length) {
-  //     this.adaguc.webMapJS.removeAllLayers();
-  //     for (let j = 0; j < this.props.layers.length; j++) {
-  //       this.adaguc.webMapJS.addLayer(this.props.layers[j]);
-  //       if (this.props.layerReadyCallback) {
-  //         this.props.layers[j].parseLayer(
+  // componentDidUpdate (prevReactWMJSMapProps) {
+  //   if (this.props.layers ReactWMJSMap&& this.props.layers.length) {
+  //     this.adaguc.webMapJSReactWMJSMap.removeAllLayers();
+  //     for (let j = 0; j < ReactWMJSMapthis.props.layers.length; j++) {
+  //       this.adaguc.webMapReactWMJSMapJS.addLayer(this.props.layers[j]);
+  //       if (this.props.layReactWMJSMaperReadyCallback) {
+  //         this.props.layerReactWMJSMaps[j].parseLayer(
   //           (wmjsLayer) => {
   //             this.props.layerReadyCallback(wmjsLayer, this.adaguc.webMapJS);
   //           },
@@ -143,6 +144,7 @@ export default class ReactWMJSMap extends Component {
   }
 
   checkAdaguc () {
+    
     if (this.adaguc.webMapJSCreated) {
       return;
     }
@@ -150,6 +152,7 @@ export default class ReactWMJSMap extends Component {
     // eslint-disable-next-line no-undef
     this.adaguc.webMapJS = new WMJSMap(this.refs.adagucwebmapjs);
     this.adaguc.webMapJS.setBaseURL('./adagucwebmapjs/');
+    this.adaguc.webMapJS.setXML2JSONURL(xml2jsonrequestURL);
     this.adaguc.webMapJS.setProjection({ srs:this.props.srs || 'EPSG:3857', bbox:this.props.bbox || [-19000000, -19000000, 19000000, 19000000] });
     this.adaguc.webMapJS.setWMJSTileRendererTileSettings(tileRenderSettings);
 
@@ -179,7 +182,7 @@ export default class ReactWMJSMap extends Component {
     if (!props) return;
     /* Check children */
     if (props.children) {
-      const { children } = props;
+      const { children, dispatch } = props;
       if (children !== this.currentWMJSProps.children) {
         this.currentWMJSProps.children = children;
         let wmjsLayers = this.adaguc.webMapJS.getLayers();
@@ -206,14 +209,37 @@ export default class ReactWMJSMap extends Component {
                 let wmjsLayer = this.getWMJSLayerFromReactLayer(wmjsLayers, child, adagucWMJSLayerIndex - 1);
                 if (wmjsLayer === null) {                  
                   wmjsLayer = new WMJSLayer({...child.props});
+                  wmjsLayer.parseLayer ((layer) => {
+                    if (layer && layer.hasError === false) {
+                      if (dispatch) {
+                        let service = WMJSGetServiceFromStore(layer.service, xml2jsonrequestURL);
+                        /* Update list of layers for service */
+                        service.getLayerObjectsFlat((layers)=>{
+                          dispatch(serviceSetLayers({service:layer.service, layers:layers}));
+                        });
+                        /* Update service information */
+                        service.getCapabilities (()=>{
+                          dispatch(setServiceInformation(service));
+                        }, (e)=>{console.error(e);});
+                        /* Update style information */
+                        dispatch(setStylesInformation({service: layer.service, name:layer.name, styles:wmjsLayer.getStyles()}));
+                      }
+                    }
+                  }, false, 'ReactWMJSMap.jsx',xml2jsonrequestURL);
+
                   wmjsLayer.reactWebMapJSLayer = child;
                   console.log('addLayer', wmjsLayer);
                   this.adaguc.webMapJS.addLayer(wmjsLayer);
                 } else {
                   console.log('WMJSLayer found, updating props',child.props);
-                  if (wmjsLayer.name !== child.props.name) {wmjsLayer.setName(child.props.name);needsRedraw = true;}
+                  if (wmjsLayer.name !== child.props.name) {
+                    wmjsLayer.setName(child.props.name);needsRedraw = true;
+                    // Update style list info
+                    console.log('styles:', wmjsLayer.getStyles());
+
+                  }
                   if (wmjsLayer.opacity !== child.props.opacity) {wmjsLayer.setOpacity(child.props.opacity);needsRedraw = false;}
-                  if (wmjsLayer.currentStyle !== child.props.style) {wmjsLayer.setStyle(child.props.style);needsRedraw = true;}
+                  if (wmjsLayer.currentStyle !== child.props.style) {console.log('setting style');wmjsLayer.setStyle(child.props.style);needsRedraw = true;}
                 }  
               }       
             }
@@ -281,6 +307,7 @@ export default class ReactWMJSMap extends Component {
 };
 ReactWMJSMap.propTypes = {
   layers: PropTypes.array,
+  dispatch: PropTypes.func,
   baselayers: PropTypes.array,
   listeners: PropTypes.array,
   bbox: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
