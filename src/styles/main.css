@@ -65,7 +65,7 @@ body {
 .wrapper {
     display: grid;
     grid-gap: 0px;
-    grid-template-rows: 100px 1fr 100px;
+    grid-template-rows: 100px 1fr 200px;
     grid-template-columns: 0px 1fr;
     grid-template-areas:"header header  header"
                         "sidebar content content"
@@ -91,4 +91,40 @@ font-size: 150%;
     height:100%;
     width:100%;
     overflow:hidden;
+}
+
+.ReactWMJSLayer {
+    width:100%;
+
+    padding:2px;
+    margin:0;
+    word-wrap: break-word;
+    border: 1px solid rgba(0,0,0,0.5);
+    
+    
+    line-height:14px;
+    font-size:10px;
+    
+    display:block;
+    background:rgba(255,255,255,0.5);
+    display:none;
+}
+
+.ReactWMJSLayerProps {
+    position:absolute;
+    overflow: hidden;
+    display:block;
+    padding:0;
+    margin:0;
+    z-index:100;
+    
+}
+
+.ReactWMJSMapComponent{
+    position:absolute;
+    overflow: hidden;
+    display:block;
+    padding:0;
+    margin:0;
+    z-index:10;
 }

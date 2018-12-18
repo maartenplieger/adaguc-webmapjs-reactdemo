@@ -1,10 +1,13 @@
 import React, { Component } from 'react';
-
+import PropTypes from 'prop-types';
 export default class ReactWMJSLayer extends Component {
-    constructor (props) {
-      super(props);
-    }
-    render () {
-        return null;
-    }
+  render () {
+    return (<div className='ReactWMJSLayer' >
+      <div>{this.props.id}</div>
+      <div dangerouslySetInnerHTML={{ __html:JSON.stringify(this.props, null, '--').replaceAll('\n', '<br/>') }} />
+    </div>);
+  }
+};
+ReactWMJSLayer.propTypes = {
+  id: PropTypes.string.isRequired
 };

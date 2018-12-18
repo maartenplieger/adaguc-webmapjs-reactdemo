@@ -6,7 +6,9 @@ import ReactWMJSLayer from './react-webmapjs/ReactWMJSLayer.jsx';
 import WMJSTiledLayer from './react-webmapjs/ReactWMJSDimension.jsx';
 import GeoJSONLayer from './react-webmapjs/ReactWMJSDimension.jsx';
 import { WMJSDimension, WMJSGetServiceFromStore } from 'adaguc-webmapjs';
-import { serviceSetLayers, layerSetStyles } from './js/actions/actions.js';
+import { serviceSetLayers, layerSetStyles, layerChangeStyle } from './js/actions/actions.js';
+
+import { REACTWMJSMAP_LAYER_CHANGE_STYLE, REACTWMJSMAP_SERVICE_SET_LAYERS, REACTWMJSMAP_SERVICE_LAYER_SET_STYLES, REACTWMJSMAP_SERVICE_SET_INFORMATION } from './react-webmapjs/ReactWMJSActionTypes';
 
 class Content extends Component {
     constructor (props) {
@@ -15,14 +17,20 @@ class Content extends Component {
     render () {
         const { mapPanel, dispatch } = this.props;
         let mapPanelDispatch = (action,mapPanelIndex) => {
-          
+        //   console.log('mapPanelDispatch', action);
           switch(action.type) {
-            case 'SERVICE_SET_LAYERS':
+            case REACTWMJSMAP_SERVICE_SET_LAYERS:
               dispatch(serviceSetLayers({service:action.payload.service, layers: action.payload.layers}));
             break;
-            case 'SERVICE_LAYER_SET_STYLES':
+            case REACTWMJSMAP_SERVICE_LAYER_SET_STYLES:
               dispatch(layerSetStyles({service:action.payload.service, name: action.payload.name,styles: action.payload.styles}));
             break;
+            case REACTWMJSMAP_LAYER_CHANGE_STYLE:
+                dispatch(layerChangeStyle({ mapPanelIndex:mapPanelIndex, layerIndex: action.payload.layerIndex, style: action.payload.style, styles: action.payload.styles, name: action.payload.name }))
+            break;
+            case REACTWMJSMAP_SERVICE_SET_INFORMATION:
+                // console.log('REACTWMJSMAP_SERVICE_SET_INFORMATION', JSON.stringify(action, null, 2));
+                break;
             default:
               console.log('Unhandled action type', action.type);
           }
@@ -41,7 +49,7 @@ class Content extends Component {
                 { mapPanel[1].baseLayers.map((layer,i) => { return <ReactWMJSLayer key={i} {...layer.props} />;}) }
                 { mapPanel[1].layers.map((layer,i) => { return <ReactWMJSLayer key={i} {...layer.props} />;}) }
             </ReactWMJSMap>
-        </div>
+            </div>
         </div>
         );
     }

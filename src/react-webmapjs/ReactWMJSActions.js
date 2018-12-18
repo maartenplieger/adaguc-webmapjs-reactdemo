@@ -1,4 +1,5 @@
-import { SERVICE_SET_INFORMATION, SERVICE_SET_LAYERS, SERVICE_LAYER_SET_STYLES } from './ReactWMJSActionTypes.js';
-export const setServiceInformation = obj => ({ type: SERVICE_SET_INFORMATION, payload: obj });
-export const serviceSetLayers = obj => ({ type: SERVICE_SET_LAYERS, payload: obj });
-export const setStylesInformation = obj => ({ type: SERVICE_LAYER_SET_STYLES, payload: obj });
+import { REACTWMJSMAP_SERVICE_SET_INFORMATION, REACTWMJSMAP_SERVICE_SET_LAYERS, REACTWMJSMAP_SERVICE_LAYER_SET_STYLES, REACTWMJSMAP_LAYER_CHANGE_STYLE } from './ReactWMJSActionTypes.js';
+export const setServiceInformation = obj => ({ type: REACTWMJSMAP_SERVICE_SET_INFORMATION, payload: obj });
+export const serviceSetLayers = obj => ({ type: REACTWMJSMAP_SERVICE_SET_LAYERS, payload: obj });
+export const setStylesInformation = obj => ({ type: REACTWMJSMAP_SERVICE_LAYER_SET_STYLES, payload: obj });
+export const layerChangeStyle = obj => ({ type: REACTWMJSMAP_LAYER_CHANGE_STYLE, payload: obj });
