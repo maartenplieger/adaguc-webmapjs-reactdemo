@@ -5,8 +5,8 @@ import { layerManagerSetNumberOfLayers, layerManagerMoveLayer } from './js/actio
 import ReactWMJSLayerRow from './ReactWMJSLayerRow';
 import { SortableContainer, SortableElement } from 'react-sortable-hoc';
 
-const SortableItem = SortableElement(({ dispatch, activeMapPanelId, activeMapPanel, layerManager, services, layerIndex }) => (
-  <div style={{ backgroundColor:'black', padding: '2px 2px 2px 24px', margin: '2px' }}>
+const SortableReactWMJSLayerRow = SortableElement(({ dispatch, activeMapPanelId, activeMapPanel, layerManager, services, layerIndex }) => (
+  <div className={'noselect'} style={{ backgroundColor:'black', padding: '2px 2px 2px 24px', margin: '2px' }}>
     <ReactWMJSLayerRow
       dispatch={dispatch}
       activeMapPanelId={activeMapPanelId}
@@ -18,11 +18,11 @@ const SortableItem = SortableElement(({ dispatch, activeMapPanelId, activeMapPan
   </div>
 ));
 
-const SortableList = SortableContainer(({ dispatch, activeMapPanelId, activeMapPanel, layerManager, services }) => {
+const SortableReactWMJSLayerList = SortableContainer(({ dispatch, activeMapPanelId, activeMapPanel, layerManager, services }) => {
   return (
     <div>
       {
-        layerManager.layers.map((layer, layerIndex) => (<SortableItem
+        layerManager.layers.map((layer, layerIndex) => (<SortableReactWMJSLayerRow
           key={layerIndex}
           dispatch={dispatch}
           activeMapPanelId={activeMapPanelId}
@@ -60,7 +60,7 @@ class ReactWMJSLayerManager extends Component {
   render () {
     const { activeMapPanelId, activeMapPanel, layerManager, services, dispatch } = this.props;
     return (<div>
-      <SortableList onSortEnd={this.onSortEnd} dispatch={dispatch}
+      <SortableReactWMJSLayerList onSortEnd={this.onSortEnd} dispatch={dispatch}
         activeMapPanelId={activeMapPanelId}
         activeMapPanel={activeMapPanel}
         layerManager={layerManager}

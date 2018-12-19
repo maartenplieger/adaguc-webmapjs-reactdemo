@@ -174,6 +174,11 @@ export default class ReactWMJSMap extends Component {
                     wmjsLayer.setStyle(child.props.style);
                     needsRedraw = true;
                   }
+                  if (child.props.enabled !== undefined && wmjsLayer.enabled !== child.props.enabled) {
+                    console.log('UPDATE_LAYER: setting enabled to [' + child.props.enabled + ']');
+                    wmjsLayer.display(child.props.enabled);
+                    needsRedraw = true;
+                  }
                 }
               }
             }

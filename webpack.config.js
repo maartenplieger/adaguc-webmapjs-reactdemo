@@ -1,8 +1,8 @@
 const path = require('path');
-const webpack = require('webpack');
-const HtmlWebPackPlugin = require("html-webpack-plugin");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-require("babel-register");
+// const webpack = require('webpack');
+const HtmlWebPackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+require('babel-register');
 
 module.exports = {
   entry: './src/main.js',
@@ -21,22 +21,22 @@ module.exports = {
         use: {
           loader: 'babel-loader'
         }
-      },{
+      }, {
         test: /\.html$/,
         use: [
           {
-            loader: "html-loader",
+            loader: 'html-loader',
             options: { minimize: true }
           }
         ]
       },
       {
         test: /\.css$/,
-        use: [MiniCssExtractPlugin.loader, "css-loader"]
+        use: [MiniCssExtractPlugin.loader, 'css-loader']
       },
       {
-        test: /\.jpe?g$|\.ico$|\.gif$|\.png$|\.svg$|\.woff$|\.ttf$|\.wav$|\.mp3$/,
-        loader: 'file-loader?name=[name].[ext]'  // <-- retain original file name
+        test: /\.jpe?g$|\.ico$|\.gif$|\.png$|\.svg$|\.woff$|\.woff2$|\.eot$|\.ttf$|\.wav$|\.mp3$/,
+        loader: 'file-loader?name=[name].[ext]' // <-- retain original file name
       }
     ]
   },
@@ -48,15 +48,21 @@ module.exports = {
   },
   plugins: [
     new HtmlWebPackPlugin({
-      template: "./src/index.html",
-      filename: "./index.html"
+      template: './src/index.html',
+      filename: './index.html'
     }),
     new MiniCssExtractPlugin({
-      filename: "[name].css",
-      chunkFilename: "[id].css"
+      filename: '[name].css',
+      chunkFilename: '[id].css'
     })
-  ]
+  ],
+  devServer: {
+    overlay: true
+  },
+  watchOptions: {
+    ignored: /node_modules/
+  }
 };
 module.loaders = [
-  { test: /\.js$/, exclude: /node_modules/, use: "babel-loader" }
-]
+  { test: /\.js$/, exclude: /node_modules/, use: 'babel-loader' }
+];

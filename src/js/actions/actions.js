@@ -7,11 +7,13 @@ import { LAYER_CHANGE_NAME,
   SERVICE_LAYER_SET_STYLES,
   LAYERMANAGER_SET_NUMBER_OF_LAYERS,
   LAYERMANAGER_TOGGLE_OPACITYSELECTOR,
-  LAYERMANAGER_MOVE_LAYER
+  LAYERMANAGER_MOVE_LAYER,
+  LAYER_CHANGE_ENABLED
 } from '../constants/action-types';
 export const layerChangeName = obj => ({ type: LAYER_CHANGE_NAME, payload: obj });
 export const layerChangeOpacity = obj => ({ type: LAYER_CHANGE_OPACITY, payload: obj });
 export const layerChangeStyle = obj => ({ type: LAYER_CHANGE_STYLE, payload: obj });
+export const layerChangeEnabled = obj => ({ type: LAYER_CHANGE_ENABLED, payload: obj });
 export const serviceSetLayers = obj => ({ type: SERVICE_SET_LAYERS, payload: obj });
 export const layerManagerToggleLayerSelector = obj => ({ type: LAYERMANAGER_TOGGLE_LAYERSELECTOR, payload: obj });
 export const layerManagerToggleStylesSelector = obj => ({ type: LAYERMANAGER_TOGGLE_STYLESSELECTOR, payload: obj });

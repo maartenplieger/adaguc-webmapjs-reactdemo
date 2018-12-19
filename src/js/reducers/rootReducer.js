@@ -8,7 +8,8 @@ import {
   SERVICE_LAYER_SET_STYLES,
   LAYERMANAGER_SET_NUMBER_OF_LAYERS,
   LAYERMANAGER_TOGGLE_OPACITYSELECTOR,
-  LAYERMANAGER_MOVE_LAYER
+  LAYERMANAGER_MOVE_LAYER,
+  LAYER_CHANGE_ENABLED
 } from '../constants/action-types';
 import { LAYER_MANAGER_EMPTY_LAYER } from '../constants/templates';
 import React from 'react';
@@ -57,6 +58,8 @@ const rootReducer = (state = initialState, action = { type:null }) => {
   switch (action.type) {
     case LAYER_CHANGE_NAME:
       return produce(state, draft => { draft.webmapjs.mapPanel[action.payload.mapPanelIndex].layers[action.payload.layerIndex].props.name = action.payload.name; });
+    case LAYER_CHANGE_ENABLED:
+      return produce(state, draft => { draft.webmapjs.mapPanel[action.payload.mapPanelIndex].layers[action.payload.layerIndex].props.enabled = action.payload.enabled; });
     case LAYER_CHANGE_OPACITY:
       return produce(state, draft => { draft.webmapjs.mapPanel[action.payload.mapPanelIndex].layers[action.payload.layerIndex].props.opacity = action.payload.opacity; });
     case LAYER_CHANGE_STYLE:

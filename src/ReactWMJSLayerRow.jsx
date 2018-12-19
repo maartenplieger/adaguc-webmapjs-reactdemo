@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Button, Row, Col, Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import { layerChangeName, layerChangeOpacity, layerChangeStyle, layerManagerToggleLayerSelector,
+import { layerChangeName, layerChangeEnabled, layerChangeOpacity, layerChangeStyle, layerManagerToggleLayerSelector,
   layerManagerToggleStylesSelector, layerManagerToggleOpacitySelector } from './js/actions/actions.js';
+import { Icon } from 'react-fa';
 
 class ReactWMJSLayerRow extends Component {
   constructor (props) {
@@ -17,6 +18,15 @@ class ReactWMJSLayerRow extends Component {
   changeStyle () {
     const { dispatch } = this.props;
     dispatch(layerChangeStyle({ mapPanelIndex:0, layerIndex: 0, style: 'precip-blue/nearest' }));
+  }
+
+  renderEnabled (layer, enableLayer) {
+    if (!layer || !layer.props) {
+      return (<div>-</div>);
+    }
+    let enabled = (layer.props.enabled !== false);
+    return (<div><Button
+      onClick={() => enableLayer(!enabled)}><Icon name={enabled ? 'eye' : 'eye-slash'} /></Button></div>);
   }
   renderLayers (services, layer, isOpen, toggle, selectLayer) {
     if (!services || !services[layer.props.service] || !services[layer.props.service].layers) {
@@ -106,7 +116,15 @@ class ReactWMJSLayerRow extends Component {
     const { dispatch, layerIndex } = this.props;
     return (
       <Row>
-        <Col xs='3'>
+        <Col xs='1'>
+          {
+            this.renderEnabled(
+              this.props.activeMapPanel.layers[layerIndex],
+              (enabled) => { dispatch(layerChangeEnabled({ mapPanelIndex:this.props.activeMapPanelId, layerIndex: layerIndex, enabled: enabled })); }
+            )
+          }
+        </Col>
+        <Col xs='4'>
           {
             this.renderLayers(
               this.props.services,
