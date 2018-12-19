@@ -65,7 +65,7 @@ class ReactWMJSLayerManager extends Component {
         activeMapPanel={activeMapPanel}
         layerManager={layerManager}
         services={services}
-      />;
+      />
     </div>);
   }
 };
