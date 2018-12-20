@@ -44,7 +44,8 @@ module.exports = {
     extensions: ['.js', '.jsx']
   },
   externals:{
-    jquery: 'jQuery'
+    jquery: 'jQuery',
+    moment: 'moment'
   },
   plugins: [
     new HtmlWebPackPlugin({

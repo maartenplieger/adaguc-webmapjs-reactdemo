@@ -5,11 +5,10 @@ import { layerManagerSetNumberOfLayers, layerManagerMoveLayer } from './js/actio
 import ReactWMJSLayerRow from './ReactWMJSLayerRow';
 import { SortableContainer, SortableElement } from 'react-sortable-hoc';
 
-const SortableReactWMJSLayerRow = SortableElement(({ dispatch, activeMapPanelId, activeMapPanel, layerManager, services, layerIndex }) => (
+const SortableReactWMJSLayerRow = SortableElement(({ dispatch, activeMapPanel, layerManager, services, layerIndex }) => (
   <div className={'noselect'} style={{ backgroundColor:'black', padding: '2px 2px 2px 24px', margin: '2px' }}>
     <ReactWMJSLayerRow
       dispatch={dispatch}
-      activeMapPanelId={activeMapPanelId}
       activeMapPanel={activeMapPanel}
       layerManager={layerManager}
       services={services}
@@ -25,7 +24,6 @@ const SortableReactWMJSLayerList = SortableContainer(({ dispatch, activeMapPanel
         layerManager.layers.map((layer, layerIndex) => (<SortableReactWMJSLayerRow
           key={layerIndex}
           dispatch={dispatch}
-          activeMapPanelId={activeMapPanelId}
           activeMapPanel={activeMapPanel}
           layerManager={layerManager}
           services={services}
@@ -53,15 +51,14 @@ class ReactWMJSLayerManager extends Component {
 
   onSortEnd ({ oldIndex, newIndex }) {
     const { dispatch } = this.props;
-    const mapPanelIndex = this.props.activeMapPanelId;
-    dispatch(layerManagerMoveLayer({ oldIndex, newIndex, mapPanelIndex }));
+    const mapPanelId = this.props.activeMapPanel.id;
+    dispatch(layerManagerMoveLayer({ oldIndex, newIndex, mapPanelId }));
   }
 
   render () {
-    const { activeMapPanelId, activeMapPanel, layerManager, services, dispatch } = this.props;
+    const { activeMapPanel, layerManager, services, dispatch } = this.props;
     return (<div>
       <SortableReactWMJSLayerList onSortEnd={this.onSortEnd} dispatch={dispatch}
-        activeMapPanelId={activeMapPanelId}
         activeMapPanel={activeMapPanel}
         layerManager={layerManager}
         services={services}
@@ -71,10 +68,9 @@ class ReactWMJSLayerManager extends Component {
 };
 
 const mapStateToProps = state => {
-  const activeMapPanelId = state.activeMapPanelIndex;
+  const activeMapPanelIndex = state.activeMapPanelIndex;
   return {
-    activeMapPanelId: activeMapPanelId,
-    activeMapPanel: state.webmapjs.mapPanel[activeMapPanelId],
+    activeMapPanel: state.webmapjs.mapPanel[activeMapPanelIndex],
     layerManager: state.layerManager,
     services: state.webmapjs.services
   };
@@ -84,8 +80,7 @@ ReactWMJSLayerManager.propTypes = {
   dispatch: PropTypes.func,
   layerManager: PropTypes.object,
   services: PropTypes.object,
-  activeMapPanel: PropTypes.object,
-  activeMapPanelId: PropTypes.number
+  activeMapPanel: PropTypes.object
 };
 
 export default connect(mapStateToProps)(ReactWMJSLayerManager);

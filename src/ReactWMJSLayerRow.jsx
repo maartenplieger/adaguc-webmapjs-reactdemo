@@ -2,10 +2,17 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Button, Row, Col, Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { layerChangeName, layerChangeEnabled, layerChangeOpacity, layerChangeStyle, layerManagerToggleLayerSelector,
-  layerManagerToggleStylesSelector, layerManagerToggleOpacitySelector } from './js/actions/actions.js';
+  layerManagerToggleStylesSelector, layerManagerToggleOpacitySelector, layerChangeDimension } from './js/actions/actions.js';
 import { Icon } from 'react-fa';
+import { getWMJSLayerById, getWMJSMapById } from './react-webmapjs/ReactWMJSTools.jsx';
+import produce from 'immer';
+const moment = window.moment;
 
 class ReactWMJSLayerRow extends Component {
+  constructor (props) {
+    super(props);
+    this.click = this.click.bind(this);
+  }
   renderEnabled (layer, enableLayer) {
     if (!layer) {
       return (<div>-</div>);
@@ -98,11 +105,86 @@ class ReactWMJSLayerRow extends Component {
     );
   };
 
+  click (layerId, value, dimension) {
+    // console.log('layerChangeDimension', dimension.name, value);
+    const { dispatch, activeMapPanel } = this.props;
+    const wmjsMap = getWMJSMapById(activeMapPanel.id);
+    wmjsMap.setDimension(dimension.name, value, false);
+    const wmjsLayers = wmjsMap.getLayers();
+    for (let d = 0; d < wmjsLayers.length; d++) {
+      const layer = wmjsLayers[d];
+      // console.log('setting ' + layer.name + '/' + layer.getDimension(dimension.name).currentValue);
+      dispatch(layerChangeDimension({
+        mapPanelId:activeMapPanel.id,
+        layerId: layer.ReactWMJSLayerId,
+        dimension: produce(dimension, draft => { draft.currentValue = layer.getDimension(dimension.name).currentValue; })
+      }));
+    }
+    wmjsMap.draw('ReactWMJSLayerRow');
+    // dispatch(layerChangeDimension({
+    //   mapPanelId:activeMapPanel.id,
+    //   layerId: layerId,
+    //   dimension: produce(dimension, draft => { draft.currentValue = value; })
+    // }));
+  }
+
   renderTime (layer) {
+    // console.log('renderTime', layer);
     if (!layer || !layer.dimensions) return (<div>No dims</div>);
     const { dimensions } = layer;
-    const timeDim = dimensions.filter(dimensions.name === 'time')[0];
-    return (<div>{timeDim.currentValue}</div>);
+    const timeDim = dimensions.filter(dimension => dimension.name === 'time')[0];
+    if (!timeDim) {
+      return (<div>No dims</div>);
+    }
+    let wmjsLayer = getWMJSLayerById(layer.id);
+    const startTime = '2018-12-20T08:00:00Z';
+    const stopTime = '2018-12-20T15:00:00Z';
+    const wmjsTimeDimension = wmjsLayer.getDimension(timeDim.name);
+    // const startIndex = wmjsTimeDimension.getIndexForValue(startTime);
+    // const stopIndex = wmjsTimeDimension.getIndexForValue(stopTime);
+    const currentIndex = wmjsTimeDimension.getIndexForValue(timeDim.currentValue);
+    const momentStart = moment(startTime, 'YYYY-MM-DDTHH:mm:SS');
+    const momentEnd = moment(stopTime, 'YYYY-MM-DDTHH:mm:SS');
+    let time = momentStart;
+    let momentCalls = 0;
+    let a = [];
+    let w = 0;
+    let x = 0;
+    const width = 400;
+    const height = 40;
+    let loopIndex = wmjsTimeDimension.getIndexForValue(momentStart.format('YYYY-MM-DDTHH:mm:SS'));
+    let startX = 0;
+
+    do {
+      momentCalls++;
+      time = time.add('1', 'minute');
+      let timeString = time.format('YYYY-MM-DDTHH:mm:SS');
+      const index = wmjsTimeDimension.getIndexForValue(timeString);
+      if (index !== loopIndex) {
+        const selected = loopIndex === currentIndex;
+        let b = loopIndex;
+        if (b >= 0 && b < wmjsTimeDimension.size()) {
+          a.push(<button
+            onMouseEnter={() => { this.click(layer.id, wmjsTimeDimension.getValueForIndex(b), timeDim); }}
+            className={'ReactWMJSLayerRowTimeBlock'}
+            key={momentCalls}
+            style={{
+              border:selected ? '1px solid yellow' : '1px solid #555',
+              backgroundColor:selected ? 'yellow' : '#6C757D',
+              left: startX + 'px',
+              width: w + 'px',
+              height:'40px'
+            }}
+          />);
+        }
+        w = 0;
+        startX = x;
+        loopIndex = index;
+      }
+      w++;
+      x++;
+    } while (time < momentEnd);
+    return (<div style={{ width: width + 'px', height: height + 'px', backgroundColor: '#555', display: 'block', position: 'absolute', overflow:'hidden' }}>{a}</div>);
   };
 
   render () {
@@ -113,7 +195,7 @@ class ReactWMJSLayerRow extends Component {
           {
             this.renderEnabled(
               this.props.activeMapPanel.layers[layerIndex],
-              (enabled) => { dispatch(layerChangeEnabled({ mapPanelIndex:this.props.activeMapPanelId, layerIndex: layerIndex, enabled: enabled })); }
+              (enabled) => { dispatch(layerChangeEnabled({ mapPanelId:this.props.activeMapPanel.id, layerIndex: layerIndex, enabled: enabled })); }
             )
           }
         </Col>
@@ -124,7 +206,7 @@ class ReactWMJSLayerRow extends Component {
               this.props.activeMapPanel.layers[layerIndex],
               this.props.layerManager.layers[layerIndex].layerSelectorOpen,
               () => { dispatch(layerManagerToggleLayerSelector({ layerIndex: layerIndex })); },
-              (name) => { dispatch(layerChangeName({ mapPanelIndex:this.props.activeMapPanelId, layerIndex: layerIndex, name: name })); }
+              (name) => { dispatch(layerChangeName({ mapPanelId:this.props.activeMapPanel.id, layerIndex: layerIndex, name: name })); }
             )
           }
         </Col>
@@ -135,18 +217,18 @@ class ReactWMJSLayerRow extends Component {
               this.props.activeMapPanel.layers[layerIndex],
               this.props.layerManager.layers[layerIndex].styleSelectorOpen,
               () => { dispatch(layerManagerToggleStylesSelector({ layerIndex: layerIndex })); },
-              (style) => { dispatch(layerChangeStyle({ mapPanelIndex:this.props.activeMapPanelId, layerId: this.props.activeMapPanel.layers[layerIndex].id, style: style })); }
+              (style) => { dispatch(layerChangeStyle({ mapPanelId:this.props.activeMapPanel.id, layerId: this.props.activeMapPanel.layers[layerIndex].id, style: style })); }
             )
           }
         </Col>
-        <Col xs='0'>
+        <Col xs='1'>
           {
             this.renderOpacity(
               this.props.services,
               this.props.activeMapPanel.layers[layerIndex],
               this.props.layerManager.layers[layerIndex].opacitySelectorOpen,
               () => { dispatch(layerManagerToggleOpacitySelector({ layerIndex: layerIndex })); },
-              (opacity) => { dispatch(layerChangeOpacity({ mapPanelIndex:this.props.activeMapPanelId, layerIndex: layerIndex, opacity: opacity })); }
+              (opacity) => { dispatch(layerChangeOpacity({ mapPanelId:this.props.activeMapPanel.id, layerIndex: layerIndex, opacity: opacity })); }
             )
           }
         </Col>
@@ -160,7 +242,6 @@ ReactWMJSLayerRow.propTypes = {
   layerManager: PropTypes.object,
   services: PropTypes.object,
   activeMapPanel: PropTypes.object,
-  activeMapPanelId: PropTypes.number,
   layerIndex: PropTypes.number
 };
 

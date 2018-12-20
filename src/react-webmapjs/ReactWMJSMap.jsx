@@ -5,7 +5,8 @@ import { WMJSMap, WMJSLayer } from 'adaguc-webmapjs';
 import tileRenderSettings from './tilesettings.json';
 import ReactWMJSLayer from './ReactWMJSLayer.jsx';
 import WMJSGetServiceFromStore from 'adaguc-webmapjs/src/WMJSGetServiceFromStore';
-import { serviceSetLayers, layerSetStyles, setDimensionsInformation, layerChangeStyle } from '../js/actions/actions';
+import { serviceSetLayers, layerSetStyles, layerSetDimensions, layerChangeStyle, layerChangeDimension } from '../js/actions/actions';
+import { registerWMJSLayer, getWMJSLayerById, registerWMJSMap } from './ReactWMJSTools.jsx';
 
 let xml2jsonrequestURL = 'http://localhost:10000/XML2JSON?';
 export default class ReactWMJSMap extends Component {
@@ -39,7 +40,7 @@ export default class ReactWMJSMap extends Component {
         for (let layerIndex = 0; layerIndex < wmjsLayers.length; layerIndex++) {
           let secondIndex = ((wmjsLayers.length - 1) - index);
           let layer = wmjsLayers[layerIndex];
-          if (layer.ReactWMJSMapLayerId === reactWebMapJSLayer.props.id) {
+          if (layer === getWMJSLayerById(reactWebMapJSLayer.props.id)) {
             foundLayer = layer;
             if (layerIndex !== secondIndex) {
               console.log('UPDATE_LAYER: swapping layer indices ', layerIndex, secondIndex);
@@ -61,6 +62,7 @@ export default class ReactWMJSMap extends Component {
     this.adaguc.webMapJSCreated = true;
     // eslint-disable-next-line no-undef
     this.adaguc.webMapJS = new WMJSMap(this.refs.adagucwebmapjs);
+    registerWMJSMap(this.adaguc.webMapJS, this.props.id);
     console.log('new WMJSMAP instance with id [' + this.adaguc.webMapJS.getId() + ']');
     this.adaguc.webMapJS.setBaseURL('./adagucwebmapjs/');
     this.adaguc.webMapJS.setXML2JSONURL(xml2jsonrequestURL);
@@ -115,7 +117,8 @@ export default class ReactWMJSMap extends Component {
                 adagucWMJSBaseLayerIndex++;
                 if (wmjsLayer === null) {
                   wmjsLayer = new WMJSLayer({ ...child.props });
-                  wmjsLayer.ReactWMJSMapLayerId = child.props.id;
+                  wmjsLayer.ReactWMJSLayerId = child.props.id;
+                  registerWMJSLayer(wmjsLayer, child.props.id);
                   this.adaguc.baseLayers.push(wmjsLayer);
                   wmjsLayer.reactWebMapJSLayer = child;
                   this.adaguc.webMapJS.setBaseLayers(this.adaguc.baseLayers.reverse());
@@ -130,30 +133,44 @@ export default class ReactWMJSMap extends Component {
                 adagucWMJSLayerIndex++;
                 if (wmjsLayer === null) {
                   wmjsLayer = new WMJSLayer({ ...child.props });
-                  wmjsLayer.ReactWMJSMapLayerId = child.props.id;
+                  registerWMJSLayer(wmjsLayer, child.props.id);
+                  wmjsLayer.ReactWMJSLayerId = child.props.id;
                   this.adaguc.webMapJS.addLayer(wmjsLayer);
                   wmjsLayer.reactWebMapJSLayer = child;
                   wmjsLayer.parseLayer((_layer) => {
-                    let layer = _layer;
-                    if (layer && layer.hasError === false) {
+                    let wmjsLayer = _layer;
+                    if (wmjsLayer && wmjsLayer.hasError === false) {
                       if (dispatch) {
-                        let service = WMJSGetServiceFromStore(layer.service, xml2jsonrequestURL);
+                        let service = WMJSGetServiceFromStore(wmjsLayer.service, xml2jsonrequestURL);
                         /* Update list of layers for service */
                         let done = (layers) => {
-                          dispatch(serviceSetLayers({ service:layer.service, layers:layers }));
+                          dispatch(serviceSetLayers({ service:wmjsLayer.service, layers:layers }));
                           // /* Update service information in services */
                           // dispatch(setServiceInformation(service));
                           /* Update style information in services for a layer */
-                          dispatch(layerSetStyles({ service: layer.service, name:layer.name, styles:layer.getStyles() }));
+                          dispatch(layerSetStyles({ service: wmjsLayer.service, name:wmjsLayer.name, styles:wmjsLayer.getStyles() }));
                           /* Select first style in service for a layer */
                           dispatch(layerChangeStyle({
-                            service: layer.service,
-                            mapPanelIndex: this.props.id,
-                            layerId:layer.ReactWMJSMapLayerId,
-                            style:layer.getStyles().length > 0 ? layer.getStyles()[0].Name.value : 'default'
+                            service: wmjsLayer.service,
+                            mapPanelId: this.props.id,
+                            layerId:wmjsLayer.ReactWMJSLayerId,
+                            style:wmjsLayer.getStyles().length > 0 ? wmjsLayer.getStyles()[0].Name.value : 'default'
                           }));
                           /* Update dimensions information in services for a layer */
-                          // dispatch(setDimensionsInformation({ service: layer.service, name:layer.name, dimensions:layer.dimensions }));
+                          dispatch(layerSetDimensions({ service: wmjsLayer.service, name:wmjsLayer.name, dimensions:wmjsLayer.dimensions }));
+                          for (let d = 0; d < wmjsLayer.dimensions.length; d++) {
+                            let dimension = {
+                              name: wmjsLayer.dimensions[d].name,
+                              units: wmjsLayer.dimensions[d].units,
+                              currentValue: wmjsLayer.dimensions[d].currentValue
+                            };
+                            dispatch(layerChangeDimension({
+                              service: wmjsLayer.service,
+                              mapPanelId: this.props.id,
+                              layerId:wmjsLayer.ReactWMJSLayerId,
+                              dimension:dimension
+                            }));
+                          }
                         };
                         service.getLayerObjectsFlat(done);
                       }
@@ -163,9 +180,8 @@ export default class ReactWMJSMap extends Component {
                   if (child.props.name !== undefined && wmjsLayer.name !== child.props.name) {
                     console.log('UPDATE_LAYER: setting name to [' + child.props.name + ']');
                     wmjsLayer.setName(child.props.name); needsRedraw = true;
-                    let layer = wmjsLayer;
-                    dispatch(layerSetStyles({ service: layer.service, name:layer.name, styles:layer.getStyles() }));
-                    dispatch(layerChangeStyle({ mapPanelIndex: this.props.id, service: layer.service, layerId:layer.ReactWMJSMapLayerId, style:layer.getStyles()[0].Name.value }));
+                    dispatch(layerSetStyles({ service: wmjsLayer.service, name:wmjsLayer.name, styles:wmjsLayer.getStyles() }));
+                    dispatch(layerChangeStyle({ mapPanelId: this.props.id, service: wmjsLayer.service, layerId:wmjsLayer.ReactWMJSLayerId, style:wmjsLayer.getStyles()[0].Name.value }));
                   }
                   if (child.props.opacity !== undefined && parseFloat(wmjsLayer.opacity) !== parseFloat(child.props.opacity)) {
                     console.log('UPDATE_LAYER: setting opacity to [' + child.props.opacity + '] - ' + wmjsLayer.opacity);
@@ -181,6 +197,17 @@ export default class ReactWMJSMap extends Component {
                     console.log('UPDATE_LAYER: setting enabled to [' + child.props.enabled + ']');
                     wmjsLayer.display(child.props.enabled);
                     needsRedraw = true;
+                  }
+                  if (child.props.dimensions !== undefined) {
+                    for (let d = 0; d < child.props.dimensions.length; d++) {
+                      const dim = child.props.dimensions[d];
+                      const wmjsDim = wmjsLayer.getDimension(dim.name);
+                      if (wmjsDim && wmjsDim.currentValue !== dim.currentValue) {
+                        console.log('UPDATE_LAYER: setting dimension to [' + dim.name + '=' + dim.currentValue + ']');
+                        wmjsDim.setValue(dim.currentValue);
+                        needsRedraw = true;
+                      }
+                    }
                   }
                 }
               }
@@ -256,5 +283,5 @@ ReactWMJSMap.propTypes = {
   webMapJSInitializedCallback: PropTypes.func,
   srs: PropTypes.string,
   children: PropTypes.array,
-  id: PropTypes.number.isRequired
+  id: PropTypes.string.isRequired
 };
