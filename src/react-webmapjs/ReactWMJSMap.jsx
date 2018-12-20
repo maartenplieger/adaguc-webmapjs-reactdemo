@@ -5,7 +5,7 @@ import { WMJSMap, WMJSLayer } from 'adaguc-webmapjs';
 import tileRenderSettings from './tilesettings.json';
 import ReactWMJSLayer from './ReactWMJSLayer.jsx';
 import WMJSGetServiceFromStore from 'adaguc-webmapjs/src/WMJSGetServiceFromStore';
-import { setServiceInformation, serviceSetLayers, setStylesInformation, layerChangeStyle } from './ReactWMJSActions.js';
+import { serviceSetLayers, layerSetStyles, setDimensionsInformation, layerChangeStyle } from '../js/actions/actions';
 
 let xml2jsonrequestURL = 'http://localhost:10000/XML2JSON?';
 export default class ReactWMJSMap extends Component {
@@ -39,7 +39,7 @@ export default class ReactWMJSMap extends Component {
         for (let layerIndex = 0; layerIndex < wmjsLayers.length; layerIndex++) {
           let secondIndex = ((wmjsLayers.length - 1) - index);
           let layer = wmjsLayers[layerIndex];
-          if (layer.ReactWMJSMapLayerIndex === reactWebMapJSLayer.props.id) {
+          if (layer.ReactWMJSMapLayerId === reactWebMapJSLayer.props.id) {
             foundLayer = layer;
             if (layerIndex !== secondIndex) {
               console.log('UPDATE_LAYER: swapping layer indices ', layerIndex, secondIndex);
@@ -115,7 +115,7 @@ export default class ReactWMJSMap extends Component {
                 adagucWMJSBaseLayerIndex++;
                 if (wmjsLayer === null) {
                   wmjsLayer = new WMJSLayer({ ...child.props });
-                  wmjsLayer.ReactWMJSMapLayerIndex = child.props.id;
+                  wmjsLayer.ReactWMJSMapLayerId = child.props.id;
                   this.adaguc.baseLayers.push(wmjsLayer);
                   wmjsLayer.reactWebMapJSLayer = child;
                   this.adaguc.webMapJS.setBaseLayers(this.adaguc.baseLayers.reverse());
@@ -130,7 +130,7 @@ export default class ReactWMJSMap extends Component {
                 adagucWMJSLayerIndex++;
                 if (wmjsLayer === null) {
                   wmjsLayer = new WMJSLayer({ ...child.props });
-                  wmjsLayer.ReactWMJSMapLayerIndex = child.props.id;
+                  wmjsLayer.ReactWMJSMapLayerId = child.props.id;
                   this.adaguc.webMapJS.addLayer(wmjsLayer);
                   wmjsLayer.reactWebMapJSLayer = child;
                   wmjsLayer.parseLayer((_layer) => {
@@ -141,16 +141,19 @@ export default class ReactWMJSMap extends Component {
                         /* Update list of layers for service */
                         let done = (layers) => {
                           dispatch(serviceSetLayers({ service:layer.service, layers:layers }));
-                          /* Update service information */
-                          dispatch(setServiceInformation(service));
-                          /* Update style information */
-                          dispatch(setStylesInformation({ service: layer.service, name:layer.name, styles:layer.getStyles() }));
-                          /* Set first style */
+                          // /* Update service information in services */
+                          // dispatch(setServiceInformation(service));
+                          /* Update style information in services for a layer */
+                          dispatch(layerSetStyles({ service: layer.service, name:layer.name, styles:layer.getStyles() }));
+                          /* Select first style in service for a layer */
                           dispatch(layerChangeStyle({
                             service: layer.service,
-                            layerIndex:layer.ReactWMJSMapLayerIndex,
+                            mapPanelIndex: this.props.id,
+                            layerId:layer.ReactWMJSMapLayerId,
                             style:layer.getStyles().length > 0 ? layer.getStyles()[0].Name.value : 'default'
                           }));
+                          /* Update dimensions information in services for a layer */
+                          // dispatch(setDimensionsInformation({ service: layer.service, name:layer.name, dimensions:layer.dimensions }));
                         };
                         service.getLayerObjectsFlat(done);
                       }
@@ -161,8 +164,8 @@ export default class ReactWMJSMap extends Component {
                     console.log('UPDATE_LAYER: setting name to [' + child.props.name + ']');
                     wmjsLayer.setName(child.props.name); needsRedraw = true;
                     let layer = wmjsLayer;
-                    dispatch(setStylesInformation({ service: layer.service, name:layer.name, styles:layer.getStyles() }));
-                    dispatch(layerChangeStyle({ service: layer.service, layerIndex:layer.ReactWMJSMapLayerIndex, style:layer.getStyles()[0].Name.value }));
+                    dispatch(layerSetStyles({ service: layer.service, name:layer.name, styles:layer.getStyles() }));
+                    dispatch(layerChangeStyle({ mapPanelIndex: this.props.id, service: layer.service, layerId:layer.ReactWMJSMapLayerId, style:layer.getStyles()[0].Name.value }));
                   }
                   if (child.props.opacity !== undefined && parseFloat(wmjsLayer.opacity) !== parseFloat(child.props.opacity)) {
                     console.log('UPDATE_LAYER: setting opacity to [' + child.props.opacity + '] - ' + wmjsLayer.opacity);
@@ -252,5 +255,6 @@ ReactWMJSMap.propTypes = {
   bbox: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
   webMapJSInitializedCallback: PropTypes.func,
   srs: PropTypes.string,
-  children: PropTypes.array
+  children: PropTypes.array,
+  id: PropTypes.number.isRequired
 };

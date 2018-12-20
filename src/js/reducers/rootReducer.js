@@ -12,15 +12,8 @@ import {
   LAYER_CHANGE_ENABLED
 } from '../constants/action-types';
 import { LAYER_MANAGER_EMPTY_LAYER } from '../constants/templates';
-import React from 'react';
-import ReactWMJSLayer from '../../react-webmapjs/ReactWMJSLayer.jsx';
 import produce from 'immer';
-
-var generatedLayerIds = 0;
-const generateLayerId = () => {
-  generatedLayerIds++;
-  return 'layerid_' + generatedLayerIds;
-};
+import { generateLayerId, getLayerIndexFromAction } from '../../react-webmapjs/ReactWMJSTools.jsx';
 
 const initialState = {
   activeMapPanelIndex: 0,
@@ -31,25 +24,67 @@ const initialState = {
     services: {},
     mapPanel: [
       {
+        id: 0,
+        bbox: [0, 40, 10, 60],
+        srs: 'EPSG:4326',
         baseLayers:[
-          (<ReactWMJSLayer service='https://geoservices.knmi.nl/cgi-bin/worldmaps.cgi?' name='nl_raster_latlon' baseLayer id={generateLayerId()} />),
-          (<ReactWMJSLayer service='https://geoservices.knmi.nl/cgi-bin/worldmaps.cgi?' name='world_line' format='image/png' keepOnTop baseLayer id={generateLayerId()} />)
+          {
+            service:'https://geoservices.knmi.nl/cgi-bin/worldmaps.cgi?',
+            name:'nl_raster_latlon',
+            baseLayer:true,
+            id:generateLayerId()
+          }, {
+            service:'https://geoservices.knmi.nl/cgi-bin/worldmaps.cgi?',
+            name:'world_line',
+            format:'image/png',
+            keepOnTop:true,
+            baseLayer:true,
+            id:generateLayerId()
+          }
         ],
         layers:[
-          (<ReactWMJSLayer service='https://geoservices.knmi.nl/cgi-bin/RADNL_OPER_R___25PCPRR_L3.cgi?' name='RADNL_OPER_R___25PCPRR_L3_COLOR' opacity='0.5' id={generateLayerId()} />),
-          (<ReactWMJSLayer service='https://geoservices.knmi.nl/cgi-bin/RADNL_OPER_R___25PCPRR_L3.cgi?'
-            name='RADNL_OPER_R___25PCPRR_L3_KNMI' style='precip/nearest' opacity='0.9' id={generateLayerId()} />),
-          (<ReactWMJSLayer service='http://geoservices.knmi.nl/cgi-bin/HARM_N25.cgi?' name='air_temperature__at_2m' opacity='0.3' id={generateLayerId()} />)
+          {
+            service:'https://geoservices.knmi.nl/cgi-bin/RADNL_OPER_R___25PCPRR_L3.cgi?',
+            name:'RADNL_OPER_R___25PCPRR_L3_COLOR',
+            opacity:'0.5',
+            id:generateLayerId()
+          },
+          {
+            service:'https://geoservices.knmi.nl/cgi-bin/RADNL_OPER_R___25PCPRR_L3.cgi?',
+            name:'RADNL_OPER_R___25PCPRR_L3_KNMI',
+            opacity:'0.5',
+            id:generateLayerId()
+          },
+          {
+            service:'http://geoservices.knmi.nl/cgi-bin/HARM_N25.cgi?',
+            name:'air_temperature__at_2m',
+            opacity:'0.3',
+            id:generateLayerId()
+          }
         ]
       }, {
+        id: 1,
         baseLayers:[
-          (<ReactWMJSLayer service='https://geoservices.knmi.nl/cgi-bin/worldmaps.cgi?' name='nl_raster_latlon' baseLayer id={generateLayerId()} />),
-          (<ReactWMJSLayer service='https://geoservices.knmi.nl/cgi-bin/worldmaps.cgi?' name='world_line' format='image/png' keepOnTop baseLayer id={generateLayerId()} />)
+          {
+            service:'https://geoservices.knmi.nl/cgi-bin/worldmaps.cgi?',
+            name:'nl_raster_latlon',
+            baseLayer:true,
+            id:generateLayerId()
+          }, {
+            service:'https://geoservices.knmi.nl/cgi-bin/worldmaps.cgi?',
+            name:'world_line',
+            format:'image/png',
+            keepOnTop:true,
+            baseLayer:true,
+            id:generateLayerId()
+          }
         ],
-        layers:[
-          (<ReactWMJSLayer service='https://geoservices.knmi.nl/cgi-bin/RADNL_OPER_R___25PCPRR_L3.cgi?' name='RADNL_OPER_R___25PCPRR_L3_KNMI' opacity='0.5' style='precip/nearest'
-            id={generateLayerId()} />)
-        ]
+        layers:[{
+          service:'https://geoservices.knmi.nl/cgi-bin/RADNL_OPER_R___25PCPRR_L3.cgi?',
+          name:'RADNL_OPER_R___25PCPRR_L3_COLOR',
+          opacity:'0.5',
+          id:generateLayerId()
+        }]
       }
     ]
   }
@@ -57,18 +92,16 @@ const initialState = {
 const rootReducer = (state = initialState, action = { type:null }) => {
   switch (action.type) {
     case LAYER_CHANGE_NAME:
-      return produce(state, draft => { draft.webmapjs.mapPanel[action.payload.mapPanelIndex].layers[action.payload.layerIndex].props.name = action.payload.name; });
+      return produce(state, draft => { draft.webmapjs.mapPanel[action.payload.mapPanelIndex].layers[action.payload.layerIndex].name = action.payload.name; });
     case LAYER_CHANGE_ENABLED:
-      return produce(state, draft => { draft.webmapjs.mapPanel[action.payload.mapPanelIndex].layers[action.payload.layerIndex].props.enabled = action.payload.enabled; });
+      return produce(state, draft => { draft.webmapjs.mapPanel[action.payload.mapPanelIndex].layers[action.payload.layerIndex].enabled = action.payload.enabled; });
     case LAYER_CHANGE_OPACITY:
-      return produce(state, draft => { draft.webmapjs.mapPanel[action.payload.mapPanelIndex].layers[action.payload.layerIndex].props.opacity = action.payload.opacity; });
+      return produce(state, draft => { draft.webmapjs.mapPanel[action.payload.mapPanelIndex].layers[action.payload.layerIndex].opacity = action.payload.opacity; });
     case LAYER_CHANGE_STYLE:
       return produce(state, draft => {
-        if (action.payload.layerIndex >= state.webmapjs.mapPanel[action.payload.mapPanelIndex].layers.length) {
-          return;
-        }
-        if (!draft.webmapjs.mapPanel[action.payload.mapPanelIndex].layers[action.payload.layerIndex]) return;
-        draft.webmapjs.mapPanel[action.payload.mapPanelIndex].layers[action.payload.layerIndex].props.style = action.payload.style;
+        let layerIndex = getLayerIndexFromAction(action, state.webmapjs.mapPanel[action.payload.mapPanelIndex].layers);
+        if (layerIndex === null) return;
+        draft.webmapjs.mapPanel[action.payload.mapPanelIndex].layers[layerIndex].style = action.payload.style;
       });
     case SERVICE_SET_LAYERS:
       return produce(state, draft => {

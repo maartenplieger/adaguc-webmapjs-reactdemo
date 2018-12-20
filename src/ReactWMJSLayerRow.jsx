@@ -6,34 +6,20 @@ import { layerChangeName, layerChangeEnabled, layerChangeOpacity, layerChangeSty
 import { Icon } from 'react-fa';
 
 class ReactWMJSLayerRow extends Component {
-  constructor (props) {
-    super(props);
-    this.changeOpacity = this.changeOpacity.bind(this);
-    this.changeStyle = this.changeStyle.bind(this);
-  }
-  changeOpacity () {
-    const { dispatch } = this.props;
-    dispatch(layerChangeOpacity({ mapPanelIndex:0, layerIndex: 0, opacity: 1 }));
-  }
-  changeStyle () {
-    const { dispatch } = this.props;
-    dispatch(layerChangeStyle({ mapPanelIndex:0, layerIndex: 0, style: 'precip-blue/nearest' }));
-  }
-
   renderEnabled (layer, enableLayer) {
-    if (!layer || !layer.props) {
+    if (!layer) {
       return (<div>-</div>);
     }
-    let enabled = (layer.props.enabled !== false);
+    let enabled = (layer.enabled !== false);
     return (<div><Button
       onClick={() => enableLayer(!enabled)}><Icon name={enabled ? 'eye' : 'eye-slash'} /></Button></div>);
   }
   renderLayers (services, layer, isOpen, toggle, selectLayer) {
-    if (!services || !services[layer.props.service] || !services[layer.props.service].layers) {
+    if (!services || !services[layer.service] || !services[layer.service].layers) {
       return (<div><Button>Select service...</Button></div>);
     }
-    const layers = services[layer.props.service].layers;
-    let filteredLayers = layers.filter(l => l.name === layer.props.name);
+    const layers = services[layer.service].layers;
+    let filteredLayers = layers.filter(l => l.name === layer.name);
     const currentValue = filteredLayers.length === 1 && filteredLayers[0].text ? filteredLayers[0].text : 'none';
     return (
       <Dropdown isOpen={isOpen} toggle={toggle}>
@@ -55,10 +41,10 @@ class ReactWMJSLayerRow extends Component {
   renderStyles (services, layer, isOpen, toggle, selectStyle) {
     let currentStyle = { Name: { value:'none' }, Title:{ value: 'none' } };
     let styles = [];
-    if (services && services[layer.props.service] && services[layer.props.service].layer) {
-      const serviceLayer = services[layer.props.service].layer[layer.props.name];
+    if (services && services[layer.service] && services[layer.service].layer) {
+      const serviceLayer = services[layer.service].layer[layer.name];
       styles = serviceLayer && serviceLayer.styles && serviceLayer.styles.length > 0 ? serviceLayer.styles : [];
-      currentStyle = styles.filter(l => l.name === layer.props.style)[0] || { Name: { value:'default' }, Title:{ value:'default' } };
+      currentStyle = styles.filter(l => l.name === layer.style)[0] || { Name: { value:'default' }, Title:{ value:'default' } };
     }
     const currentValue = currentStyle.Title.value;
     return (
@@ -79,7 +65,7 @@ class ReactWMJSLayerRow extends Component {
   }
 
   renderOpacity (services, layer, isOpen, toggle, selectOpacity) {
-    let currentOpacity = layer && layer.props && layer.props.opacity !== undefined ? layer.props.opacity : 1.0;
+    let currentOpacity = layer && layer.opacity !== undefined ? layer.opacity : 1.0;
     let opacities = [
       { name:0.0, title: '0 %' },
       { name:0.1, title: '10 %' },
@@ -110,13 +96,20 @@ class ReactWMJSLayerRow extends Component {
         </DropdownMenu>
       </Dropdown>
     );
-  }
+  };
+
+  renderTime (layer) {
+    if (!layer || !layer.dimensions) return (<div>No dims</div>);
+    const { dimensions } = layer;
+    const timeDim = dimensions.filter(dimensions.name === 'time')[0];
+    return (<div>{timeDim.currentValue}</div>);
+  };
 
   render () {
     const { dispatch, layerIndex } = this.props;
     return (
       <Row>
-        <Col xs='1'>
+        <Col xs='0'>
           {
             this.renderEnabled(
               this.props.activeMapPanel.layers[layerIndex],
@@ -135,18 +128,18 @@ class ReactWMJSLayerRow extends Component {
             )
           }
         </Col>
-        <Col xs='3'>
+        <Col xs='2'>
           {
             this.renderStyles(
               this.props.services,
               this.props.activeMapPanel.layers[layerIndex],
               this.props.layerManager.layers[layerIndex].styleSelectorOpen,
               () => { dispatch(layerManagerToggleStylesSelector({ layerIndex: layerIndex })); },
-              (style) => { dispatch(layerChangeStyle({ mapPanelIndex:this.props.activeMapPanelId, layerIndex: layerIndex, style: style })); }
+              (style) => { dispatch(layerChangeStyle({ mapPanelIndex:this.props.activeMapPanelId, layerId: this.props.activeMapPanel.layers[layerIndex].id, style: style })); }
             )
           }
         </Col>
-        <Col xs='1'>
+        <Col xs='0'>
           {
             this.renderOpacity(
               this.props.services,
@@ -157,6 +150,7 @@ class ReactWMJSLayerRow extends Component {
             )
           }
         </Col>
+        <Col xs='4'>{ this.renderTime(this.props.activeMapPanel.layers[layerIndex]) }</Col>
       </Row>);
   }
 }
