@@ -181,7 +181,7 @@ export default class ReactWMJSMap extends Component {
                     console.log('UPDATE_LAYER: setting name to [' + child.props.name + ']');
                     wmjsLayer.setName(child.props.name); needsRedraw = true;
                     dispatch(layerSetStyles({ service: wmjsLayer.service, name:wmjsLayer.name, styles:wmjsLayer.getStyles() }));
-                    dispatch(layerChangeStyle({ mapPanelId: this.props.id, service: wmjsLayer.service, layerId:wmjsLayer.ReactWMJSLayerId, style:wmjsLayer.getStyles()[0].Name.value }));
+                    dispatch(layerChangeStyle({ mapPanelId: this.props.id, service: wmjsLayer.service, layerId:wmjsLayer.ReactWMJSLayerId, style:wmjsLayer.getStyles().length === 0 ? 'default' : wmjsLayer.getStyles()[0].Name.value }));
                   }
                   if (child.props.opacity !== undefined && parseFloat(wmjsLayer.opacity) !== parseFloat(child.props.opacity)) {
                     console.log('UPDATE_LAYER: setting opacity to [' + child.props.opacity + '] - ' + wmjsLayer.opacity);

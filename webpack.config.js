@@ -1,5 +1,5 @@
 const path = require('path');
-// const webpack = require('webpack');
+const webpack = require('webpack');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 require('babel-register');
@@ -55,10 +55,12 @@ module.exports = {
     new MiniCssExtractPlugin({
       filename: '[name].css',
       chunkFilename: '[id].css'
-    })
+    }),
+    new webpack.HotModuleReplacementPlugin()
   ],
   devServer: {
-    overlay: true
+    overlay: false,
+    hot: true
   },
   watchOptions: {
     ignored: /node_modules/

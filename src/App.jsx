@@ -1,8 +1,9 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { hot } from 'react-hot-loader';
 import style from './styles/main.css'; // eslint-disable-line no-unused-vars
 import 'bootstrap/dist/css/bootstrap.min.css';
-import WMJSLayerManager from './ReduxWMJSLayerManager.jsx';
+import WMJSLayerManager from './ReactWMJSLayerManager/ReduxWMJSLayerManager.jsx';
 import TitleBarContainer from './TitleBarContainer';
 import Content from './Content';
 require('./img/adaguc-logo-favicon-16x16.png');
@@ -16,4 +17,4 @@ const App = () => {
     <div className='footer'><WMJSLayerManager /></div>
   </div>);
 };
-export default connect(null)(App);
+export default hot(module)(connect(null)(App));

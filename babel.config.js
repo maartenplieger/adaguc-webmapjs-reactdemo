@@ -4,6 +4,7 @@ module.exports = function (api) {
     "@babel/preset-react"
   ];
   const plugins =  [
+    "react-hot-loader/babel"
   ];
   
   api.cache(false);

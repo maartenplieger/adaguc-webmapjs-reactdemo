@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { layerManagerSetNumberOfLayers, layerManagerMoveLayer } from './js/actions/actions.js';
+import { layerManagerSetNumberOfLayers, layerManagerMoveLayer } from '../js/actions/actions.js';
 import ReactWMJSLayerRow from './ReactWMJSLayerRow';
 import { SortableContainer, SortableElement } from 'react-sortable-hoc';
 

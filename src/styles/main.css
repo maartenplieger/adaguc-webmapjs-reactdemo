@@ -75,7 +75,7 @@ body {
 .wrapper {
     display: grid;
     grid-gap: 0px;
-    grid-template-rows: 100px 1fr 200px;
+    grid-template-rows: 100px 1fr 300px;
     grid-template-columns: 0px 1fr;
     grid-template-areas:"header header  header"
                         "sidebar content content"

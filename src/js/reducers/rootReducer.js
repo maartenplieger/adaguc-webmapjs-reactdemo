@@ -11,7 +11,9 @@ import {
   LAYERMANAGER_TOGGLE_OPACITYSELECTOR,
   LAYERMANAGER_MOVE_LAYER,
   LAYER_CHANGE_ENABLED,
-  SERVICE_LAYER_SET_DIMENSIONS
+  SERVICE_LAYER_SET_DIMENSIONS,
+  LAYERMANAGER_SET_TIMERESOLUTION,
+  LAYERMANAGER_SET_TIMEVALUE
 } from '../constants/action-types';
 import { LAYER_MANAGER_EMPTY_LAYER } from '../constants/templates';
 import produce from 'immer';
@@ -20,7 +22,10 @@ import { generateLayerId, getLayerIndexFromAction, getDimensionIndexFromAction, 
 const initialState = {
   activeMapPanelIndex: 0,
   layerManager:{
-    layers:[]
+    layers: [],
+    timeResolution: 60,
+    timeStart: '2015-06-05T08:00:00Z',
+    timeEnd: '2015-06-05T24:00:00Z'
   },
   webmapjs:{
     services: {},
@@ -31,13 +36,13 @@ const initialState = {
         srs: 'EPSG:4326',
         baseLayers:[
           {
-            service:'https://geoservices.knmi.nl/cgi-bin/worldmaps.cgi?',
-            name:'nl_raster_latlon',
+            service:'http://localhost/adaguc.dataset.cgi?dataset=baselayers&',
+            name:'baselayer',
             baseLayer:true,
             id:generateLayerId()
           }, {
-            service:'https://geoservices.knmi.nl/cgi-bin/worldmaps.cgi?',
-            name:'world_line',
+            service:'http://localhost/adaguc.dataset.cgi?dataset=baselayers&',
+            name:'overlay',
             format:'image/png',
             keepOnTop:true,
             baseLayer:true,
@@ -46,35 +51,44 @@ const initialState = {
         ],
         layers:[
           {
-            service:'https://geoservices.knmi.nl/cgi-bin/RADNL_OPER_R___25PCPRR_L3.cgi?',
-            name:'RADNL_OPER_R___25PCPRR_L3_COLOR',
-            opacity:'0.5',
+            service:'http://localhost/adaguc.dataset.cgi?DATASET=radar&SERVICE=WMS&',
+            name:'precipitation',
+            opacity:'0.9',
             id:generateLayerId()
-          },
-          {
-            service:'https://geoservices.knmi.nl/cgi-bin/RADNL_OPER_R___25PCPRR_L3.cgi?',
+          }, {
+            service:'http://localhost/adaguc.dataset.cgi?dataset=sat&',
+            name:'HRVIS',
+            opacity:'0.9',
+            id:generateLayerId()
+          }, {
+            service:'http://geoservices.knmi.nl/cgi-bin/RADNL_OPER_R___25PCPRR_L3.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetCapabilities',
             name:'RADNL_OPER_R___25PCPRR_L3_KNMI',
-            opacity:'0.5',
+            opacity:'0.9',
             id:generateLayerId()
-          },
-          {
-            service:'http://geoservices.knmi.nl/cgi-bin/HARM_N25.cgi?',
-            name:'air_temperature__at_2m',
-            opacity:'0.3',
+          }, {
+            service:'http://msgcpp-ogc-realtime.knmi.nl/msgrt.cgi?',
+            name:'air_temperature_at_cloud_top',
+            opacity:'0.9',
+            id:generateLayerId()
+          }, {
+            service:'http://msgcpp-ogc-archive.knmi.nl/msgar.cgi?',
+            name:'air_temperature_at_cloud_top',
+            opacity:'0.9',
             id:generateLayerId()
           }
+
         ]
       }, {
         id: generateMapId(),
         baseLayers:[
           {
-            service:'https://geoservices.knmi.nl/cgi-bin/worldmaps.cgi?',
-            name:'nl_raster_latlon',
+            service:'http://localhost/adaguc.dataset.cgi?dataset=baselayers&',
+            name:'baselayer',
             baseLayer:true,
             id:generateLayerId()
           }, {
-            service:'https://geoservices.knmi.nl/cgi-bin/worldmaps.cgi?',
-            name:'world_line',
+            service:'http://localhost/adaguc.dataset.cgi?dataset=baselayers&',
+            name:'overlay',
             format:'image/png',
             keepOnTop:true,
             baseLayer:true,
@@ -82,9 +96,9 @@ const initialState = {
           }
         ],
         layers:[{
-          service:'https://geoservices.knmi.nl/cgi-bin/RADNL_OPER_R___25PCPRR_L3.cgi?',
-          name:'RADNL_OPER_R___25PCPRR_L3_COLOR',
-          opacity:'0.5',
+          service:'http://localhost/adaguc.dataset.cgi?dataset=sat&',
+          name:'HRVIS',
+          opacity:'0.9',
           id:generateLayerId()
         }]
       }
@@ -136,11 +150,21 @@ const rootReducer = (state = initialState, action = { type:null }) => {
       });
     case LAYERMANAGER_MOVE_LAYER:
       return produce(state, draft => {
-        draft.webmapjs.mapPanel[getMapPanelIndexFromAction(action, state.webmapjs.mapPanel)].layers[action.payload.oldIndex] = state.webmapjs.mapPanel[getMapPanelIndexFromAction(action, state.webmapjs.mapPanel)].layers[action.payload.newIndex];
-        draft.webmapjs.mapPanel[getMapPanelIndexFromAction(action, state.webmapjs.mapPanel)].layers[action.payload.newIndex] = state.webmapjs.mapPanel[getMapPanelIndexFromAction(action, state.webmapjs.mapPanel)].layers[action.payload.oldIndex];
+        draft.webmapjs.mapPanel[getMapPanelIndexFromAction(action, state.webmapjs.mapPanel)].layers[action.payload.oldIndex] =
+          state.webmapjs.mapPanel[getMapPanelIndexFromAction(action, state.webmapjs.mapPanel)].layers[action.payload.newIndex];
+        draft.webmapjs.mapPanel[getMapPanelIndexFromAction(action, state.webmapjs.mapPanel)].layers[action.payload.newIndex] =
+          state.webmapjs.mapPanel[getMapPanelIndexFromAction(action, state.webmapjs.mapPanel)].layers[action.payload.oldIndex];
       });
     case LAYERMANAGER_TOGGLE_LAYERSELECTOR:
       return produce(state, draft => { draft.layerManager.layers[action.payload.layerIndex].layerSelectorOpen = !draft.layerManager.layers[action.payload.layerIndex].layerSelectorOpen; });
+    case LAYERMANAGER_SET_TIMERESOLUTION:
+      return produce(state, draft => {
+        if (action.payload.timeResolution !== undefined) draft.layerManager.timeResolution = action.payload.timeResolution;
+        if (action.payload.timeStart) draft.layerManager.timeStart = action.payload.timeStart;
+        if (action.payload.timeEnd) draft.layerManager.timeEnd = action.payload.timeEnd;
+      });
+    case LAYERMANAGER_SET_TIMEVALUE:
+      return produce(state, draft => { draft.layerManager.timeValue = action.payload.timeValue; });
     case SERVICE_LAYER_SET_STYLES:
       return produce(state, draft => {
         if (!action.payload.service || !action.payload.name) { return; }
