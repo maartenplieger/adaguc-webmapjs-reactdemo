@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "test": "echo \"ok\"",
-    "lint": "eslint \"**/*.{js,jsx}\" --quiet --fix", 
+    "lint": "eslint \"**/*.{js,jsx}\" --quiet --fix",
     "dev": "webpack --mode development",
     "build": "webpack --mode production",
     "start": "webpack-dev-server --mode development --port 4000 --hot"
@@ -71,6 +71,7 @@
     "mini-css-extract-plugin": "^0.4.4",
     "react": "^16.6.0",
     "react-dom": "^16.6.0",
+    "react-hot-loader": "^4.6.3",
     "react-redux": "^5.1.0",
     "redux": "^4.0.1",
     "source-map": "^0.7.3",
