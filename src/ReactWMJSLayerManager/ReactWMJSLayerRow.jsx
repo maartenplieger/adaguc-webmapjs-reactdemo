@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Button, Row, Col, Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { layerChangeName, layerChangeEnabled, layerChangeOpacity, layerChangeStyle, layerManagerToggleLayerSelector,
-  layerManagerToggleStylesSelector, layerManagerToggleOpacitySelector } from '../js/actions/actions.js';
+  layerManagerToggleStylesSelector, layerManagerToggleOpacitySelector, layerDelete, layerFocus } from '../js/actions/actions.js';
 import { Icon } from 'react-fa';
 import ReactWMJSTimeSelector from './ReactWMJSTimeSelector';
 
@@ -11,10 +11,28 @@ class ReactWMJSLayerRow extends Component {
     if (!layer) {
       return (<div>-</div>);
     }
-    let enabled = (layer.enabled !== false);
-    return (<div><Button
-      onClick={() => enableLayer(!enabled)}><Icon name={enabled ? 'eye' : 'eye-slash'} /></Button></div>);
+    let enabled = layer.enabled !== false;
+    return (<Button
+      onClick={(e) => { enableLayer(!enabled); e.stopPropagation(); e.preventDefault(); }}>
+      <Icon name={enabled ? 'eye' : 'eye-slash'} /></Button>);
   }
+  renderDelete (layer, deleteLayer) {
+    if (!layer) {
+      return (<div>-</div>);
+    }
+    return (<Button
+      onClick={(e) => { deleteLayer(); e.stopPropagation(); e.preventDefault(); }}>
+      <Icon name={'trash'} /></Button>);
+  }
+  renderFocus (layer, focusLayer) {
+    if (!layer) {
+      return (<div>-</div>);
+    }
+    return (<Button
+      onClick={(e) => { focusLayer(); e.stopPropagation(); e.preventDefault(); }}>
+      <Icon name={'window-maximize'} /></Button>);
+  }
+
   renderLayers (services, layer, isOpen, toggle, selectLayer) {
     if (!services || !services[layer.service] || !services[layer.service].layers) {
       return (<div><Button>Select service...</Button></div>);
@@ -98,20 +116,32 @@ class ReactWMJSLayerRow extends Component {
       </Dropdown>
     );
   };
-  
+
   render () {
     const { dispatch, layerIndex } = this.props;
     return (
       <Row>
-        <Col xs='0'>
+        <Col xs='2'>
+          {
+            this.renderDelete(
+              this.props.activeMapPanel.layers[layerIndex],
+              () => { dispatch(layerDelete({ mapPanelId:this.props.activeMapPanel.id, layerIndex: layerIndex })); }
+            )
+          }
           {
             this.renderEnabled(
               this.props.activeMapPanel.layers[layerIndex],
               (enabled) => { dispatch(layerChangeEnabled({ mapPanelId:this.props.activeMapPanel.id, layerIndex: layerIndex, enabled: enabled })); }
             )
           }
+          {
+            this.renderFocus(
+              this.props.activeMapPanel.layers[layerIndex],
+              () => { dispatch(layerFocus({ mapPanelId:this.props.activeMapPanel.id, layerIndex: layerIndex })); }
+            )
+          }
         </Col>
-        <Col xs='4'>
+        <Col xs='3'>
           {
             this.renderLayers(
               this.props.services,
@@ -145,7 +175,7 @@ class ReactWMJSLayerRow extends Component {
           }
         </Col>
         <Col xs='4'>{ <ReactWMJSTimeSelector
-          layer={this.props.activeMapPanel.layers[layerIndex]} 
+          layer={this.props.activeMapPanel.layers[layerIndex]}
           activeMapPanel={this.props.activeMapPanel}
           layerManager={this.props.layerManager}
           dispatch={this.props.dispatch}

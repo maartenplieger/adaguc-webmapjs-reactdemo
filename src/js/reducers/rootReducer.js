@@ -3,6 +3,8 @@ import {
   LAYER_CHANGE_OPACITY,
   LAYER_CHANGE_STYLE,
   LAYER_CHANGE_DIMENSION,
+  LAYER_DELETE,
+  LAYER_FOCUS,
   SERVICE_SET_LAYERS,
   LAYERMANAGER_TOGGLE_LAYERSELECTOR,
   LAYERMANAGER_TOGGLE_STYLESSELECTOR,
@@ -24,8 +26,9 @@ const initialState = {
   layerManager:{
     layers: [],
     timeResolution: 60,
-    timeStart: '2015-06-05T08:00:00Z',
-    timeEnd: '2015-06-05T24:00:00Z'
+    timeStart: null,
+    timeEnd: null,
+    timeValue: null
   },
   webmapjs:{
     services: {},
@@ -34,45 +37,19 @@ const initialState = {
         id: generateMapId(),
         bbox: [0, 40, 10, 60],
         srs: 'EPSG:4326',
-        baseLayers:[
-          {
-            service:'http://localhost/adaguc.dataset.cgi?dataset=baselayers&',
-            name:'baselayer',
-            baseLayer:true,
-            id:generateLayerId()
-          }, {
-            service:'http://localhost/adaguc.dataset.cgi?dataset=baselayers&',
-            name:'overlay',
-            format:'image/png',
-            keepOnTop:true,
-            baseLayer:true,
-            id:generateLayerId()
-          }
+        baseLayers:[{
+          service:'http://geoservices.knmi.nl/cgi-bin/worldmaps.cgi?',
+          name:'ne_10m_admin_0_countries_simplified',
+          format:'image/png',
+          keepOnTop:true,
+          baseLayer:true,
+          id:generateLayerId()
+        }
         ],
         layers:[
           {
-            service:'http://localhost/adaguc.dataset.cgi?DATASET=radar&SERVICE=WMS&',
-            name:'precipitation',
-            opacity:'0.9',
-            id:generateLayerId()
-          }, {
-            service:'http://localhost/adaguc.dataset.cgi?dataset=sat&',
-            name:'HRVIS',
-            opacity:'0.9',
-            id:generateLayerId()
-          }, {
             service:'http://geoservices.knmi.nl/cgi-bin/RADNL_OPER_R___25PCPRR_L3.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetCapabilities',
             name:'RADNL_OPER_R___25PCPRR_L3_KNMI',
-            opacity:'0.9',
-            id:generateLayerId()
-          }, {
-            service:'http://msgcpp-ogc-realtime.knmi.nl/msgrt.cgi?',
-            name:'air_temperature_at_cloud_top',
-            opacity:'0.9',
-            id:generateLayerId()
-          }, {
-            service:'http://msgcpp-ogc-archive.knmi.nl/msgar.cgi?',
-            name:'air_temperature_at_cloud_top',
             opacity:'0.9',
             id:generateLayerId()
           }
@@ -82,25 +59,15 @@ const initialState = {
         id: generateMapId(),
         baseLayers:[
           {
-            service:'http://localhost/adaguc.dataset.cgi?dataset=baselayers&',
-            name:'baselayer',
-            baseLayer:true,
-            id:generateLayerId()
-          }, {
-            service:'http://localhost/adaguc.dataset.cgi?dataset=baselayers&',
-            name:'overlay',
+            service:'http://geoservices.knmi.nl/cgi-bin/worldmaps.cgi?',
+            name:'ne_10m_admin_0_countries_simplified',
             format:'image/png',
             keepOnTop:true,
             baseLayer:true,
             id:generateLayerId()
           }
         ],
-        layers:[{
-          service:'http://localhost/adaguc.dataset.cgi?dataset=sat&',
-          name:'HRVIS',
-          opacity:'0.9',
-          id:generateLayerId()
-        }]
+        layers:[]
       }
     ]
   }
@@ -132,6 +99,15 @@ const rootReducer = (state = initialState, action = { type:null }) => {
         }
         draft.webmapjs.mapPanel[getMapPanelIndexFromAction(action, state.webmapjs.mapPanel)].layers[layerIndex].dimensions = dimensions;
       });
+    case LAYER_FOCUS:
+      console.log('FOCUS');
+      return produce(state, draft => {
+      });
+    case LAYER_DELETE:
+      return produce(state, draft => {
+        draft.webmapjs.mapPanel[getMapPanelIndexFromAction(action, state.webmapjs.mapPanel)].layers.splice(action.payload.layerIndex, 1);
+        draft.layerManager.layers.splice(action.payload.layerIndex, 1);
+      });
     case SERVICE_SET_LAYERS:
       return produce(state, draft => {
         if (!draft.webmapjs.services[action.payload.service]) draft.webmapjs.services[action.payload.service] = {};
@@ -159,9 +135,11 @@ const rootReducer = (state = initialState, action = { type:null }) => {
       return produce(state, draft => { draft.layerManager.layers[action.payload.layerIndex].layerSelectorOpen = !draft.layerManager.layers[action.payload.layerIndex].layerSelectorOpen; });
     case LAYERMANAGER_SET_TIMERESOLUTION:
       return produce(state, draft => {
+        // console.log('timeStart', actio/n.payload.timeStart);
         if (action.payload.timeResolution !== undefined) draft.layerManager.timeResolution = action.payload.timeResolution;
-        if (action.payload.timeStart) draft.layerManager.timeStart = action.payload.timeStart;
-        if (action.payload.timeEnd) draft.layerManager.timeEnd = action.payload.timeEnd;
+        if (action.payload.timeStart && action.payload.timeStart.isValid()) draft.layerManager.timeStart = action.payload.timeStart;
+        if (action.payload.timeEnd && action.payload.timeEnd.isValid()) draft.layerManager.timeEnd = action.payload.timeEnd;
+        if (action.payload.timeValue && action.payload.timeValue.isValid()) draft.layerManager.timeValue = action.payload.timeValue;
       });
     case LAYERMANAGER_SET_TIMEVALUE:
       return produce(state, draft => { draft.layerManager.timeValue = action.payload.timeValue; });

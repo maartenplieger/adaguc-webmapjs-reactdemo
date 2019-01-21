@@ -3,10 +3,17 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { layerManagerSetNumberOfLayers, layerManagerMoveLayer } from '../js/actions/actions.js';
 import ReactWMJSLayerRow from './ReactWMJSLayerRow';
-import { SortableContainer, SortableElement } from 'react-sortable-hoc';
+import { SortableContainer, SortableElement, SortableHandle } from 'react-sortable-hoc';
+import { Icon } from 'react-fa';
+
+const DragHandle = SortableHandle(() =>
+  <span className={'SortableReactWMJSLayerDragHandle'}>
+    <Icon className={'SortableReactWMJSLayerDragHandleIcon'} name='hand-grab-o' />
+  </span>);
 
 const SortableReactWMJSLayerRow = SortableElement(({ dispatch, activeMapPanel, layerManager, services, layerIndex }) => (
-  <div className={'noselect'} style={{ backgroundColor:'black', padding: '2px 2px 2px 24px', margin: '2px' }}>
+  <div className={'noselect SortableReactWMJSLayerRow'} >
+    <DragHandle />
     <ReactWMJSLayerRow
       dispatch={dispatch}
       activeMapPanel={activeMapPanel}
@@ -58,7 +65,9 @@ class ReactWMJSLayerManager extends Component {
   render () {
     const { activeMapPanel, layerManager, services, dispatch } = this.props;
     return (<div>
-      <SortableReactWMJSLayerList onSortEnd={this.onSortEnd} dispatch={dispatch}
+      <SortableReactWMJSLayerList
+        useDragHandle
+        onSortEnd={this.onSortEnd} dispatch={dispatch}
         activeMapPanel={activeMapPanel}
         layerManager={layerManager}
         services={services}

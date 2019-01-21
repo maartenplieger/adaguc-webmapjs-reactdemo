@@ -139,9 +139,30 @@ font-size: 150%;
     z-index:10;
 }
 
+.SortableReactWMJSLayerRow {
+  background-color: black;
+  display: block;
+  line-height: 10pt;
+  /* border-radius: 0.25rem; */
+  white-space:nowrap;
+  margin: 0px 0px 1px 0px;
+  padding: 4px;
+}
+
 .ReactWMJSLayerRowTimeBlock{
   z-index: 10000;
   cursor:pointer;
   display: inline-block;
   position: absolute;
+}
+
+.SortableReactWMJSLayerDragHandle {
+  float:left;
+  cursor: grab;
+  color: white;
+  height:100%;
+}
+
+.SortableReactWMJSLayerDragHandleIcon{
+  margin:10px 0 0 10px;
 }

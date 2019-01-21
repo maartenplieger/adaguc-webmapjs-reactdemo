@@ -12,13 +12,17 @@ import { LAYER_CHANGE_NAME,
   LAYER_CHANGE_ENABLED,
   SERVICE_LAYER_SET_DIMENSIONS,
   LAYERMANAGER_SET_TIMERESOLUTION,
-  LAYERMANAGER_SET_TIMEVALUE
+  LAYERMANAGER_SET_TIMEVALUE,
+  LAYER_DELETE,
+  LAYER_FOCUS
 } from '../constants/action-types';
 export const layerChangeName = obj => ({ type: LAYER_CHANGE_NAME, payload: obj });
 export const layerChangeOpacity = obj => ({ type: LAYER_CHANGE_OPACITY, payload: obj });
 export const layerChangeStyle = obj => ({ type: LAYER_CHANGE_STYLE, payload: obj });
 export const layerChangeDimension = obj => ({ type: LAYER_CHANGE_DIMENSION, payload: obj });
 export const layerChangeEnabled = obj => ({ type: LAYER_CHANGE_ENABLED, payload: obj });
+export const layerDelete = obj => ({ type: LAYER_DELETE, payload: obj });
+export const layerFocus = obj => ({ type: LAYER_FOCUS, payload: obj });
 export const serviceSetLayers = obj => ({ type: SERVICE_SET_LAYERS, payload: obj });
 export const layerManagerToggleLayerSelector = obj => ({ type: LAYERMANAGER_TOGGLE_LAYERSELECTOR, payload: obj });
 export const layerManagerToggleStylesSelector = obj => ({ type: LAYERMANAGER_TOGGLE_STYLESSELECTOR, payload: obj });

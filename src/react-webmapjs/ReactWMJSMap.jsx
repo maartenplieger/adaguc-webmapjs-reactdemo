@@ -100,8 +100,20 @@ export default class ReactWMJSMap extends Component {
         let adagucWMJSBaseLayerIndex = 0;
         let needsRedraw = false;
         let myChilds = [];
+
         React.Children.forEach(children, (child, i) => myChilds.push(child));
         myChilds.reverse();
+
+        /* Detect all ReactLayers connected to WMJSLayers, remove WMJSLayer if there is no ReactLayer */
+        for (let l = 0; l < wmjsLayers.length; l++) {
+          if (myChilds.filter(c => c.props.id === wmjsLayers[l].ReactWMJSLayerId).length === 0) {
+            wmjsLayers[l].remove();
+            this.checkNewProps(props);
+            return;
+          }
+        }        
+
+        /* Loop through all layers and update WMJSLayer properties where needed */
         for (let c = 0; c < myChilds.length; c++) {
           let child = myChilds[c];
           if (child.type) {
@@ -177,27 +189,40 @@ export default class ReactWMJSMap extends Component {
                     }
                   }, false, 'ReactWMJSMap.jsx', xml2jsonrequestURL);
                 } else {
+                  /* Set the name of the ADAGUC WMJSLayer */
                   if (child.props.name !== undefined && wmjsLayer.name !== child.props.name) {
                     console.log('UPDATE_LAYER: setting name to [' + child.props.name + ']');
                     wmjsLayer.setName(child.props.name); needsRedraw = true;
                     dispatch(layerSetStyles({ service: wmjsLayer.service, name:wmjsLayer.name, styles:wmjsLayer.getStyles() }));
-                    dispatch(layerChangeStyle({ mapPanelId: this.props.id, service: wmjsLayer.service, layerId:wmjsLayer.ReactWMJSLayerId, style:wmjsLayer.getStyles().length === 0 ? 'default' : wmjsLayer.getStyles()[0].Name.value }));
+                    dispatch(layerChangeStyle({
+                      mapPanelId: this.props.id,
+                      service: wmjsLayer.service,
+                      layerId:wmjsLayer.ReactWMJSLayerId,
+                      style:wmjsLayer.getStyles().length === 0 ? 'default' : wmjsLayer.getStyles()[0].Name.value }));
                   }
+
+                  /* Set the Opacity of the ADAGUC WMJSLayer */
                   if (child.props.opacity !== undefined && parseFloat(wmjsLayer.opacity) !== parseFloat(child.props.opacity)) {
                     console.log('UPDATE_LAYER: setting opacity to [' + child.props.opacity + '] - ' + wmjsLayer.opacity);
                     wmjsLayer.setOpacity(child.props.opacity);
                     needsRedraw = false;
                   }
+
+                  /* Set the Style of the ADAGUC WMJSLayer */
                   if (child.props.style !== undefined && wmjsLayer.currentStyle !== child.props.style) {
                     console.log('UPDATE_LAYER: setting style to [' + child.props.style + ']');
                     wmjsLayer.setStyle(child.props.style);
                     needsRedraw = true;
                   }
+
+                  /* Set the Enabled prop of the ADAGUC WMJSLayer */
                   if (child.props.enabled !== undefined && wmjsLayer.enabled !== child.props.enabled) {
                     console.log('UPDATE_LAYER: setting enabled to [' + child.props.enabled + ']');
                     wmjsLayer.display(child.props.enabled);
                     needsRedraw = true;
                   }
+
+                  /* Set the dimensions of the ADAGUC WMJSLayer */
                   if (child.props.dimensions !== undefined) {
                     for (let d = 0; d < child.props.dimensions.length; d++) {
                       const dim = child.props.dimensions[d];
@@ -208,7 +233,7 @@ export default class ReactWMJSMap extends Component {
                         needsRedraw = true;
                       }
                     }
-                  }
+                  }          
                 }
               }
             }

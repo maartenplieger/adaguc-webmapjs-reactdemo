@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "test": "echo \"ok\"",
-    "lint": "eslint ./src --fix",
+    "lint": "eslint \"**/*.{js,jsx}\" --quiet --fix", 
     "dev": "webpack --mode development",
     "build": "webpack --mode production",
     "start": "webpack-dev-server --mode development --port 4000 --hot"
