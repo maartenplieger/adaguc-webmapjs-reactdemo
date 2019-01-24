@@ -1,3 +1,4 @@
+import { timeResolutionGetIndexForValue, timeResolutionSteps } from '../../ReactWMJSLayerManager/TimeResolutionSteps';
 import {
   LAYER_CHANGE_NAME,
   LAYER_CHANGE_OPACITY,
@@ -19,8 +20,8 @@ import {
 } from '../constants/action-types';
 import { LAYER_MANAGER_EMPTY_LAYER } from '../constants/templates';
 import produce from 'immer';
-import { generateLayerId, getLayerIndexFromAction, getDimensionIndexFromAction, generateMapId, getMapPanelIndexFromAction } from '../../react-webmapjs/ReactWMJSTools.jsx';
-
+import { generateLayerId, getLayerIndexFromAction, getDimensionIndexFromAction, generateMapId, getMapPanelIndexFromAction, getWMJSMapById } from '../../react-webmapjs/ReactWMJSTools.jsx';
+const moment = window.moment;
 const initialState = {
   activeMapPanelIndex: 0,
   layerManager:{
@@ -53,7 +54,6 @@ const initialState = {
             opacity:'0.9',
             id:generateLayerId()
           }
-
         ]
       }, {
         id: generateMapId(),
@@ -137,8 +137,15 @@ const rootReducer = (state = initialState, action = { type:null }) => {
       return produce(state, draft => {
         // console.log('timeStart', actio/n.payload.timeStart);
         if (action.payload.timeResolution !== undefined) draft.layerManager.timeResolution = action.payload.timeResolution;
-        if (action.payload.timeStart && action.payload.timeStart.isValid()) draft.layerManager.timeStart = action.payload.timeStart;
-        if (action.payload.timeEnd && action.payload.timeEnd.isValid()) draft.layerManager.timeEnd = action.payload.timeEnd;
+        const currentTimeResolution = state.layerManager.timeResolution;
+        const newTimeResolution = action.payload.timeResolution;
+        let currentValue = moment.utc(state.layerManager.timeValue, 'YYYY-MM-DDTHH:mm:SS');
+        const momentStart = moment.utc(state.layerManager.timeStart, 'YYYY-MM-DDTHH:mm:SS');
+        const momentEnd = moment.utc(state.layerManager.timeEnd, 'YYYY-MM-DDTHH:mm:SS');
+        let newStart = moment.utc(currentValue + (((momentStart - currentValue) * newTimeResolution) / currentTimeResolution));
+        let newEnd = moment.utc(currentValue + (((momentEnd - currentValue) * newTimeResolution) / currentTimeResolution));
+        if (action.payload.timeStart && action.payload.timeStart.isValid()) draft.layerManager.timeStart = action.payload.timeStart; else draft.layerManager.timeStart = newStart;
+        if (action.payload.timeEnd && action.payload.timeEnd.isValid()) draft.layerManager.timeEnd = action.payload.timeEnd; else draft.layerManager.timeEnd = newEnd;
         if (action.payload.timeValue && action.payload.timeValue.isValid()) draft.layerManager.timeValue = action.payload.timeValue;
       });
     case LAYERMANAGER_SET_TIMEVALUE:

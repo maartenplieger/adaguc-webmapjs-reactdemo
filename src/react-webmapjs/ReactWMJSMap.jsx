@@ -4,9 +4,9 @@ import { debounce } from 'throttle-debounce';
 import { WMJSMap, WMJSLayer } from 'adaguc-webmapjs';
 import tileRenderSettings from './tilesettings.json';
 import ReactWMJSLayer from './ReactWMJSLayer.jsx';
-import WMJSGetServiceFromStore from 'adaguc-webmapjs/src/WMJSGetServiceFromStore';
-import { serviceSetLayers, layerSetStyles, layerSetDimensions, layerChangeStyle, layerChangeDimension } from '../js/actions/actions';
+import { layerSetStyles, layerChangeStyle } from '../js/actions/actions';
 import { registerWMJSLayer, getWMJSLayerById, registerWMJSMap } from './ReactWMJSTools.jsx';
+import { parseWMJSLayerAndDispatchActions } from './ReactWMJSParseLayer.jsx';
 
 let xml2jsonrequestURL = 'http://localhost:10000/XML2JSON?';
 export default class ReactWMJSMap extends Component {
@@ -149,45 +149,7 @@ export default class ReactWMJSMap extends Component {
                   wmjsLayer.ReactWMJSLayerId = child.props.id;
                   this.adaguc.webMapJS.addLayer(wmjsLayer);
                   wmjsLayer.reactWebMapJSLayer = child;
-                  wmjsLayer.parseLayer((_layer) => {
-                    let wmjsLayer = _layer;
-                    if (wmjsLayer && wmjsLayer.hasError === false) {
-                      if (dispatch) {
-                        let service = WMJSGetServiceFromStore(wmjsLayer.service, xml2jsonrequestURL);
-                        /* Update list of layers for service */
-                        let done = (layers) => {
-                          dispatch(serviceSetLayers({ service:wmjsLayer.service, layers:layers }));
-                          // /* Update service information in services */
-                          // dispatch(setServiceInformation(service));
-                          /* Update style information in services for a layer */
-                          dispatch(layerSetStyles({ service: wmjsLayer.service, name:wmjsLayer.name, styles:wmjsLayer.getStyles() }));
-                          /* Select first style in service for a layer */
-                          dispatch(layerChangeStyle({
-                            service: wmjsLayer.service,
-                            mapPanelId: this.props.id,
-                            layerId:wmjsLayer.ReactWMJSLayerId,
-                            style:wmjsLayer.getStyles().length > 0 ? wmjsLayer.getStyles()[0].Name.value : 'default'
-                          }));
-                          /* Update dimensions information in services for a layer */
-                          dispatch(layerSetDimensions({ service: wmjsLayer.service, name:wmjsLayer.name, dimensions:wmjsLayer.dimensions }));
-                          for (let d = 0; d < wmjsLayer.dimensions.length; d++) {
-                            let dimension = {
-                              name: wmjsLayer.dimensions[d].name,
-                              units: wmjsLayer.dimensions[d].units,
-                              currentValue: wmjsLayer.dimensions[d].currentValue
-                            };
-                            dispatch(layerChangeDimension({
-                              service: wmjsLayer.service,
-                              mapPanelId: this.props.id,
-                              layerId:wmjsLayer.ReactWMJSLayerId,
-                              dimension:dimension
-                            }));
-                          }
-                        };
-                        service.getLayerObjectsFlat(done);
-                      }
-                    }
-                  }, false, 'ReactWMJSMap.jsx', xml2jsonrequestURL);
+                  parseWMJSLayerAndDispatchActions(wmjsLayer, dispatch, this.props.id, xml2jsonrequestURL);
                 } else {
                   /* Set the name of the ADAGUC WMJSLayer */
                   if (child.props.name !== undefined && wmjsLayer.name !== child.props.name) {

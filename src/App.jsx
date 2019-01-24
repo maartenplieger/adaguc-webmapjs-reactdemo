@@ -2,6 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { hot } from 'react-hot-loader';
 import style from './styles/main.css'; // eslint-disable-line no-unused-vars
+import style2 from './ReactWMJSLayerManager/ReduxWMJSLayerManager.css'; // eslint-disable-line no-unused-vars
 import 'bootstrap/dist/css/bootstrap.min.css';
 import WMJSLayerManager from './ReactWMJSLayerManager/ReduxWMJSLayerManager.jsx';
 import TitleBarContainer from './TitleBarContainer';

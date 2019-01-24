@@ -1,52 +1,20 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { layerManagerSetNumberOfLayers, layerManagerMoveLayer } from '../js/actions/actions.js';
-import ReactWMJSLayerRow from './ReactWMJSLayerRow';
-import { SortableContainer, SortableElement, SortableHandle } from 'react-sortable-hoc';
+import { layerManagerSetNumberOfLayers, layerManagerMoveLayer, layerManagerSetTimeResolution, serviceRefresh } from '../js/actions/actions.js';
+import SortableWMJSReactLayerList from './SortableWMJSReactLayerList.jsx';
+import { Button, Row, Col, Label } from 'reactstrap';
+import { timeResolutionGetObject, timeResolutionGetIndexForValue, timeResolutionSteps } from './TimeResolutionSteps';
 import { Icon } from 'react-fa';
-
-const DragHandle = SortableHandle(() =>
-  <span className={'SortableReactWMJSLayerDragHandle'}>
-    <Icon className={'SortableReactWMJSLayerDragHandleIcon'} name='hand-grab-o' />
-  </span>);
-
-const SortableReactWMJSLayerRow = SortableElement(({ dispatch, activeMapPanel, layerManager, services, layerIndex }) => (
-  <div className={'noselect SortableReactWMJSLayerRow'} >
-    <DragHandle />
-    <ReactWMJSLayerRow
-      dispatch={dispatch}
-      activeMapPanel={activeMapPanel}
-      layerManager={layerManager}
-      services={services}
-      layerIndex={layerIndex}
-    />
-  </div>
-));
-
-const SortableReactWMJSLayerList = SortableContainer(({ dispatch, activeMapPanelId, activeMapPanel, layerManager, services }) => {
-  return (
-    <div>
-      {
-        layerManager.layers.map((layer, layerIndex) => (<SortableReactWMJSLayerRow
-          key={layerIndex}
-          dispatch={dispatch}
-          activeMapPanel={activeMapPanel}
-          layerManager={layerManager}
-          services={services}
-          layerIndex={layerIndex}
-          index={layerIndex}
-        />)
-        )
-      }
-    </div>
-  );
-});
+import { parseWMJSLayerAndDispatchActions } from '../react-webmapjs/ReactWMJSParseLayer.jsx';
+import { getWMJSMapById } from '../react-webmapjs/ReactWMJSTools.jsx';
+const moment = window.moment;
 
 class ReactWMJSLayerManager extends Component {
   constructor (props) {
     super(props);
     this.onSortEnd = this.onSortEnd.bind(this);
+    this.refreshServices = this.refreshServices.bind(this);
   }
 
   componentWillUpdate (nextProps) {
@@ -62,16 +30,61 @@ class ReactWMJSLayerManager extends Component {
     dispatch(layerManagerMoveLayer({ oldIndex, newIndex, mapPanelId }));
   }
 
+  refreshServices () {
+    const { activeMapPanel, dispatch } = this.props;
+    const wmjsMap = getWMJSMapById(activeMapPanel.id);
+    wmjsMap.clearImageStore();
+    const wmjsLayers = wmjsMap.getLayers();
+    for (let d = 0; d < wmjsLayers.length; d++) {
+      parseWMJSLayerAndDispatchActions(wmjsLayers[d], dispatch, activeMapPanel.id, null, true).then(() => {wmjsMap.draw();});
+    }
+  }
+
   render () {
     const { activeMapPanel, layerManager, services, dispatch } = this.props;
-    return (<div>
-      <SortableReactWMJSLayerList
-        useDragHandle
-        onSortEnd={this.onSortEnd} dispatch={dispatch}
-        activeMapPanel={activeMapPanel}
-        layerManager={layerManager}
-        services={services}
-      />
+
+    let timeValue = '-';
+    let localTime = '-';
+    if (layerManager && layerManager.timeValue) {
+      let timeValueAsMoment = moment.utc(layerManager.timeValue);
+      if (timeValueAsMoment.isValid()) {
+        timeValue = timeValueAsMoment.format('YYYY-MM-DDTHH:mm:SS');
+        localTime = timeValueAsMoment.local().format('YYYY-MM-DDTHH:mm:SS');
+      }
+    }
+    const currentTimeResolutionIndex = timeResolutionGetIndexForValue(layerManager.timeResolution);
+    return (<div className={'ReduxWMJSLayerManagerWrapper'}>
+      <div className={'ReduxWMJSLayerManagerContent'}>
+        <SortableWMJSReactLayerList
+          useDragHandle
+          onSortEnd={this.onSortEnd} dispatch={dispatch}
+          activeMapPanel={activeMapPanel}
+          layerManager={layerManager}
+          services={services}
+        />
+      </div>
+      <div className={'ReduxWMJSLayerManagerFooter'} >
+        <Row>
+          <Col xs='8' style={{ paddingTop:'6px' }}>{ timeValue + ' UTC / ' + localTime + ' Local time'}</Col>
+          <Col xs='2'>
+            <div>
+              <Button disabled={currentTimeResolutionIndex >= timeResolutionSteps.length - 1} onClick={() => {
+                const index = currentTimeResolutionIndex + 1;
+                if (index < timeResolutionSteps.length) { dispatch(layerManagerSetTimeResolution({ timeResolution: timeResolutionSteps[index].value })); }
+              }}><Icon name='minus' />
+              </Button>
+              <Label style={{width:'7rem', textAlign:'center'}}>{ timeResolutionGetObject(layerManager.timeResolution).title }</Label>
+              <Button disabled={currentTimeResolutionIndex === 0} onClick={() => {
+                const index = currentTimeResolutionIndex - 1; 
+                if (index >= 0) { dispatch(layerManagerSetTimeResolution({ timeResolution: timeResolutionSteps[index].value })); }
+              }}><Icon name='plus' />
+              </Button>
+            </div>
+          </Col>
+          <Col xs='1'><Button onClick={this.refreshServices}>Refresh</Button></Col>
+          <Col xs='1'><Button onClick={() => { alert('tbd'); }}>Add</Button></Col>
+        </Row>
+      </div>
     </div>);
   }
 };
