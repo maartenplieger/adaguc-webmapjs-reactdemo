@@ -46,10 +46,11 @@ const initialState = {
           format:'image/png',
           keepOnTop:true,
           baseLayer:true,
+          enabled:false,
           id:generateLayerId()
         }, {
           id:generateLayerId(),
-          name:'arcGisSat',
+          name:'WorldMap_Light_Grey_Canvas',
           type:'twms',
           baseLayer:true,
           enabled:true
@@ -59,12 +60,12 @@ const initialState = {
           {
             service:'http://geoservices.knmi.nl/cgi-bin/RADNL_OPER_R___25PCPRR_L3.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetCapabilities',
             name:'RADNL_OPER_R___25PCPRR_L3_KNMI',
-            opacity:'0.9',
+            opacity:'.8',
             id:generateLayerId()
-          },{
+          }, {
             service:'http://geoservices.knmi.nl/cgi-bin/HARM_N25.cgi?',
             name:'precipitation_flux',
-            opacity: 0.9,
+            opacity: 0.8,
             id:generateLayerId()
           }
         ]

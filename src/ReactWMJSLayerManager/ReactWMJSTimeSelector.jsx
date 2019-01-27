@@ -25,12 +25,12 @@ class ReactWMJSTimeSelector extends Component {
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.decreaseTime = this.decreaseTime.bind(this);
     this.increaseTime = this.increaseTime.bind(this);
-    this.timeBlockSize = 4;
+    this.timeBlockSize = 5;
   }
   handleKeyDown (e) {
-    if (e.keyCode === 37) {
+    if (e.keyCode === 37 || e.deltaY > 1) {
       this.decreaseTime();
-    } else if (e.keyCode === 39) {
+    } else if (e.keyCode === 39 || e.deltaY < -1) {
       this.increaseTime();
     }
   }
@@ -76,6 +76,8 @@ class ReactWMJSTimeSelector extends Component {
   getDecreaseTimeButton (key, leftPosition) {
     return (<Button
       onClick={this.decreaseTime}
+      onKeyDown={this.handleKeyDown}
+      onWheel={this.handleKeyDown}
       className={'ReactWMJSLayerTimeFocusButton'}
       key={key}
       style={{ left: leftPosition + 'px', padding: 0 }}
@@ -87,6 +89,8 @@ class ReactWMJSTimeSelector extends Component {
   getIncreaseTimeButton (key, leftPosition) {
     return (<Button
       onClick={this.increaseTime}
+      onKeyDown={this.handleKeyDown}
+      onWheel={this.handleKeyDown}
       className={'ReactWMJSLayerTimeFocusButton'}
       key={key}
       style={{ left: leftPosition + 'px', padding: 0 }}
@@ -104,6 +108,8 @@ class ReactWMJSTimeSelector extends Component {
           timeEnd: moment.utc(this.layerEndTime)
         }));
       }}
+      onKeyDown={this.handleKeyDown}
+      onWheel={this.handleKeyDown}
       className={'ReactWMJSLayerTimeFocusButton'}
       key={key}
       style={{ left: leftPosition + 'px', padding: 0 }}
@@ -235,7 +241,6 @@ class ReactWMJSTimeSelector extends Component {
 
     const currentIndex = wmjsTimeDimension.getIndexForValue(timeDim.currentValue);
     const momentStart = moment.utc(this.props.layerManager.timeStart, 'YYYY-MM-DDTHH:mm:SS');
-    this.lastFoundTime = moment.utc(momentStart).add(this.props.layerManager.timeResolution, 'second');
     let time = moment.utc(momentStart);
     let momentCalls = 0;
     let timeBlockArray = [];
@@ -246,42 +251,49 @@ class ReactWMJSTimeSelector extends Component {
     let startX = 0;
     let lastBlockWidth = 0;
     let hasSelected = false;
-    let previousTime = this.lastFoundTime;
     this.previousLastFoundTime = this.lastFoundTime;
+    
+    let index = 0;
     do {
-      momentCalls++;
-      previousTime = time;
+      momentCalls++;      
       time = time.add(this.props.layerManager.timeResolution, 'second');
       let timeString = time.format('YYYY-MM-DDTHH:mm:SS');
-      const index = wmjsTimeDimension.getIndexForValue(timeString);
+      index = wmjsTimeDimension.getIndexForValue(timeString);
       if (index !== loopIndex) {
         let concat = false;
         if (index - loopIndex > 1) concat = true;
         const selected = loopIndex === currentIndex;
-        if (selected) hasSelected = true;
         let b = loopIndex;
         let contents = null;
         if (b >= 0 && b < wmjsTimeDimension.size()) {
-          let timeBlockWidth = (w - (concat ? 0 : 1));
+          if (selected) hasSelected = true;
+          let timeBlockWidth = (w - (concat ? 0 : 0));
           if (timeBlockWidth < 1) timeBlockWidth = 1;
           if (startX < 0) { timeBlockWidth += startX; startX = 0; }
           if (startX + timeBlockWidth > this.maxWidth) timeBlockWidth = this.maxWidth - startX;
           this.previousLastFoundTime = (wmjsTimeDimension.getValueForIndex(b));
-          const className = selected && !concat ? 'ReactWMJSLayerRowTimeBlockSelected' : 'ReactWMJSLayerRowTimeBlock';
-          // if (selected) { contents = timeString; }
+          const className = selected ? 'ReactWMJSLayerRowTimeBlockSelected' : 'ReactWMJSLayerRowTimeBlock';
+          let previousTime = moment.utc(wmjsTimeDimension.getValueForIndex(loopIndex));
+          if (timeBlockWidth > 16 * 10) {
+            contents = previousTime.format('YYYY-MM-DD HH:mm');
+          } else if (timeBlockWidth > 4 * 10) {
+            contents = previousTime.format('HH:mm');
+          } else if (timeBlockWidth > 2 * 7) {
+            contents = previousTime.format('mm');
+          }
+          if (selected) {timeBlockWidth += 2; startX -= 1;}
           timeBlockArray.push(<button
             onClick={() => { this.click(wmjsTimeDimension.getValueForIndex(b)); }}
             className={className}
             key={timeBlockArray.length}
             style={{
-              borderLeft: selected && concat ? '1px solid white' : 'none',
+              // borderLeft: selected && concat ? '1px solid white' : 'none',
               left: startX + 'px',
-              width: timeBlockWidth + 'px'
+              width: (timeBlockWidth) + 'px'
             }}
-          >{contents}
+          >{contents}<span className='ReactWMJSLayerRowTimeBlockTooltipText'>{previousTime.format('YYYY-MM-DD HH:mm')} UTC</span>
           </button>);
         }
-        this.lastFoundTime = previousTime;
         lastBlockWidth = w;
         w = 0;
         startX = x;
@@ -289,7 +301,10 @@ class ReactWMJSTimeSelector extends Component {
       }
       w += this.timeBlockSize;
       x += this.timeBlockSize;
-    } while (momentCalls < 1000 && x < this.maxWidth + lastBlockWidth);
+    } while (momentCalls < 1000 && x < this.maxWidth + lastBlockWidth && index !== -1);
+
+    this.lastFoundTime = moment(momentStart).add((this.maxWidth / this.timeBlockSize) * this.props.layerManager.timeResolution, 'second');
+
     // console.log(momentCalls);
     this.layerStartTime = moment.utc(wmjsTimeDimension.getValueForIndex(0), 'YYYY-MM-DDTHH:mm:SS');
     this.layerDefaultTime = moment.utc(wmjsTimeDimension.defaultValue, 'YYYY-MM-DDTHH:mm:SS');
@@ -312,15 +327,8 @@ class ReactWMJSTimeSelector extends Component {
               className={'ReactWMJSLayerRowTimeBlock'}
               key={timeBlockArray.length}
               style={{
-                border: 'none',
-                display: 'inline-block',
-                backgroundColor: '#6C757D',
                 left: startX + 'px',
-                width: width + 'px',
-                height: '100%',
-                top: '0px',
-                padding: 0,
-                margin: 0
+                width: width + 'px'
               }}
             />);
           }
@@ -330,20 +338,28 @@ class ReactWMJSTimeSelector extends Component {
       /* Draw selected time if selected time was not drawn in previous loop */
       if (!hasSelected) {
         let startX = parseInt(((this.layerCurrentValue - momentStart) / (this.lastFoundTime - momentStart)) * this.maxWidth);
-        if (startX > 0 && startX < this.maxWidth) {
+        if (startX >= 0 && startX < this.maxWidth) {
           timeBlockArray.push(<div
-            className={'ReactWMJSLayerRowTimeBlock'}
+            className={'ReactWMJSLayerRowTimeBlockSelected'}
             key={timeBlockArray.length}
             style={{
-              border: 'none',
-              display: 'inline-block',
-              backgroundColor: 'white',
-              left: startX + 'px',
-              width: '1px',
-              height: '100%',
-              top: '0px',
-              padding: 0,
-              margin: 0
+              width: (this.timeBlockSize + 2) + 'px',
+              left: (startX - 1) + 'px'
+            }}
+          />);
+        }
+      }
+
+      /* Draw current time */
+      {
+        let startX = parseInt(((moment.now() - momentStart) / (this.lastFoundTime - momentStart)) * this.maxWidth);
+        if (startX >= 0 && startX < this.maxWidth) {
+          timeBlockArray.push(<div
+            className={'ReactWMJSLayerRowTimeBlockCurrentTime'}
+            key={timeBlockArray.length}
+            style={{
+              width: this.timeBlockSize + 'px',
+              left: startX + 'px'
             }}
           />);
         }
@@ -353,10 +369,14 @@ class ReactWMJSTimeSelector extends Component {
       <div>
         <div
           onKeyDown={ this.handleKeyDown }
+          onWheel={this.handleKeyDown}
+          // onWheel={this.onWheel}
           ref={this.timeBlockContainer}
-          onWheel={this.onWheel}
-          style={{ width: '100%', height: '100%', display: 'block', position: 'absolute', overflow: 'hidden' }}>
-          <div style={{ width: (this.maxWidth) + 'px', marginRight: '0px', height: '100%', backgroundColor: '#555', display: 'inline-block' }} />
+          className='ReduxWMJSLayerManagerTimeSelectorContentRef'>
+          <div className='ReduxWMJSLayerManagerTimeSelectorContent' style={{ width: (this.maxWidth) + 'px' }} 
+            onKeyDown={ this.handleKeyDown }
+            onWheel={this.handleKeyDown}
+          />
           {timeBlockArray}
         </div>
         <div>{this.getDecreaseTimeButton(0, this.currentWidth - 72)}</div>

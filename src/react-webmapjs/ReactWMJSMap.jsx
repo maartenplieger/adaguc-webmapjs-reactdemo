@@ -35,7 +35,7 @@ export default class ReactWMJSMap extends Component {
 
   getWMJSLayerFromReactLayer (wmjsLayers, reactWebMapJSLayer, index) {
     let foundLayer = null;
-    if (reactWebMapJSLayer.props.service && reactWebMapJSLayer.props.name && reactWebMapJSLayer.props.id) {
+    if (reactWebMapJSLayer.props.name && reactWebMapJSLayer.props.id) {
       if (index >= 0 && index < wmjsLayers.length) {
         for (let layerIndex = 0; layerIndex < wmjsLayers.length; layerIndex++) {
           let secondIndex = ((wmjsLayers.length - 1) - index);
@@ -134,6 +134,7 @@ export default class ReactWMJSMap extends Component {
                   this.adaguc.baseLayers.push(wmjsLayer);
                   wmjsLayer.reactWebMapJSLayer = child;
                   this.adaguc.webMapJS.setBaseLayers(this.adaguc.baseLayers.reverse());
+                  needsRedraw = true;
                 }
               } else {
                 let obj = this.getWMJSLayerFromReactLayer(wmjsLayers, child, adagucWMJSLayerIndex);

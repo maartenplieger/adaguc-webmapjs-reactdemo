@@ -36,7 +36,7 @@
     "proj4": "^2.5.0"
   },
   "dependencies": {
-    "adaguc-webmapjs": "^3.2.7",
+    "adaguc-webmapjs": "^3.2.8",
     "bootstrap": "^4.1.3",
     "eslint": "^5.10.0",
     "immer": "^1.7.4",

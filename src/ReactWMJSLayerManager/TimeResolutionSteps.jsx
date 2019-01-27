@@ -1,10 +1,12 @@
 export const timeResolutionSteps = [
   { value: 10, title: '10 seconds' },
   { value: 12, title: '12 seconds' },
+  { value: 15, title: '15 seconds' },
   { value: 20, title: '20 seconds' },
   { value: 30, title: '30 seconds' },
   { value: 45, title: '45 seconds' },
   { value: 60, title: '1 minute' },
+  { value: 60 * 2, title: '2 minutes' },
   { value: 60 * 2.5, title: '2.5 minutes' },
   { value: 60 * 5, title: '5 minutes' },
   { value: 60 * 10, title: '10 minutes' },

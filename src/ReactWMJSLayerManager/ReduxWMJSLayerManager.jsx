@@ -43,13 +43,11 @@ class ReactWMJSLayerManager extends Component {
   render () {
     const { activeMapPanel, layerManager, services, dispatch } = this.props;
 
-    let timeValue = '-';
     let localTime = '-';
     if (layerManager && layerManager.timeValue) {
       let timeValueAsMoment = moment.utc(layerManager.timeValue);
       if (timeValueAsMoment.isValid()) {
-        timeValue = timeValueAsMoment.format('YYYY-MM-DDTHH:mm:SS');
-        localTime = timeValueAsMoment.local().format('YYYY-MM-DDTHH:mm:SS');
+        localTime = timeValueAsMoment.local().format('YYYY-MM-DD HH:mm:SS');
       }
     }
     const currentTimeResolutionIndex = timeResolutionGetIndexForValue(layerManager.timeResolution);
@@ -65,7 +63,7 @@ class ReactWMJSLayerManager extends Component {
       </div>
       <div className={'ReduxWMJSLayerManagerFooter'} >
         <Row>
-          <Col xs='8' style={{ paddingTop:'6px' }}>{ timeValue + ' UTC / ' + localTime + ' Local time'}</Col>
+          <Col xs='8'>{ localTime + ' (local time)'}</Col>
           <Col xs='2'>
             <div>
               <Button disabled={currentTimeResolutionIndex >= timeResolutionSteps.length - 1} onClick={() => {
