@@ -121,7 +121,7 @@ class ReactWMJSLayerRow extends Component {
     const { dispatch, layerIndex } = this.props;
     return (
       <Row>
-        <Col xs='2'>
+        <Col xs='1' style={{whiteSpace:'no-wrap'}}>
           {
             this.renderDelete(
               this.props.activeMapPanel.layers[layerIndex],
@@ -134,36 +134,12 @@ class ReactWMJSLayerRow extends Component {
               (enabled) => { dispatch(layerChangeEnabled({ mapPanelId:this.props.activeMapPanel.id, layerIndex: layerIndex, enabled: enabled })); }
             )
           }
-          {
+          {/* {
             this.renderFocus(
               this.props.activeMapPanel.layers[layerIndex],
               () => { dispatch(layerFocus({ mapPanelId:this.props.activeMapPanel.id, layerIndex: layerIndex })); }
             )
-          }
-        </Col>
-        <Col xs='3'>
-          {
-            this.renderLayers(
-              this.props.services,
-              this.props.activeMapPanel.layers[layerIndex],
-              this.props.layerManager.layers[layerIndex].layerSelectorOpen,
-              () => { dispatch(layerManagerToggleLayerSelector({ layerIndex: layerIndex })); },
-              (name) => { dispatch(layerChangeName({ mapPanelId:this.props.activeMapPanel.id, layerIndex: layerIndex, name: name })); }
-            )
-          }
-        </Col>
-        <Col xs='2'>
-          {
-            this.renderStyles(
-              this.props.services,
-              this.props.activeMapPanel.layers[layerIndex],
-              this.props.layerManager.layers[layerIndex].styleSelectorOpen,
-              () => { dispatch(layerManagerToggleStylesSelector({ layerIndex: layerIndex })); },
-              (style) => { dispatch(layerChangeStyle({ mapPanelId:this.props.activeMapPanel.id, layerId: this.props.activeMapPanel.layers[layerIndex].id, style: style })); }
-            )
-          }
-        </Col>
-        <Col xs='1'>
+          } */}
           {
             this.renderOpacity(
               this.props.services,
@@ -174,7 +150,27 @@ class ReactWMJSLayerRow extends Component {
             )
           }
         </Col>
-        <Col xs='4'>{ <ReactWMJSTimeSelector
+        <Col xs='2'>
+          {
+            this.renderLayers(
+              this.props.services,
+              this.props.activeMapPanel.layers[layerIndex],
+              this.props.layerManager.layers[layerIndex].layerSelectorOpen,
+              () => { dispatch(layerManagerToggleLayerSelector({ layerIndex: layerIndex })); },
+              (name) => { dispatch(layerChangeName({ mapPanelId:this.props.activeMapPanel.id, layerIndex: layerIndex, name: name })); }
+            )
+          }
+          {
+            this.renderStyles(
+              this.props.services,
+              this.props.activeMapPanel.layers[layerIndex],
+              this.props.layerManager.layers[layerIndex].styleSelectorOpen,
+              () => { dispatch(layerManagerToggleStylesSelector({ layerIndex: layerIndex })); },
+              (style) => { dispatch(layerChangeStyle({ mapPanelId:this.props.activeMapPanel.id, layerId: this.props.activeMapPanel.layers[layerIndex].id, style: style })); }
+            )
+          }
+        </Col>
+        <Col xs='9'>{ <ReactWMJSTimeSelector
           layer={this.props.activeMapPanel.layers[layerIndex]}
           activeMapPanel={this.props.activeMapPanel}
           layerManager={this.props.layerManager}

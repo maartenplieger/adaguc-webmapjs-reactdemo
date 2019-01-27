@@ -42,7 +42,7 @@ export default class ReactWMJSMap extends Component {
           let layer = wmjsLayers[layerIndex];
           if (layer === getWMJSLayerById(reactWebMapJSLayer.props.id)) {
             foundLayer = layer;
-            if (layerIndex !== secondIndex) {
+            if (!reactWebMapJSLayer.props.baseLayer && layerIndex !== secondIndex) {
               console.log('UPDATE_LAYER: swapping layer indices ', layerIndex, secondIndex);
               this.adaguc.webMapJS.swapLayers(wmjsLayers[layerIndex], wmjsLayers[secondIndex]);
               this.adaguc.webMapJS.draw();
@@ -144,6 +144,8 @@ export default class ReactWMJSMap extends Component {
                 let wmjsLayer = obj.layer;
                 adagucWMJSLayerIndex++;
                 if (wmjsLayer === null) {
+
+                  console.log('new normal layer');
                   wmjsLayer = new WMJSLayer({ ...child.props });
                   registerWMJSLayer(wmjsLayer, child.props.id);
                   wmjsLayer.ReactWMJSLayerId = child.props.id;
@@ -172,7 +174,7 @@ export default class ReactWMJSMap extends Component {
 
                   /* Set the Style of the ADAGUC WMJSLayer */
                   if (child.props.style !== undefined && wmjsLayer.currentStyle !== child.props.style) {
-                    console.log('UPDATE_LAYER: setting style to [' + child.props.style + ']');
+                    console.log('UPDATE_LAYER: setting style to [' + child.props.style + '] was ' + wmjsLayer.currentStyle);
                     wmjsLayer.setStyle(child.props.style);
                     needsRedraw = true;
                   }

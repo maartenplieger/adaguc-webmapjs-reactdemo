@@ -20,7 +20,7 @@ export const parseWMJSLayerAndDispatchActions = (wmjsLayer, dispatch, mapPanelId
               service: wmjsLayer.service,
               mapPanelId: mapPanelId,
               layerId:wmjsLayer.ReactWMJSLayerId,
-              style:wmjsLayer.getStyles().length > 0 ? wmjsLayer.getStyles()[0].Name.value : 'default'
+              style: wmjsLayer.currentStyle// || wmjsLayer.getStyles().length > 0 ? wmjsLayer.getStyles()[0].Name.value : 'default'
             }));
             /* Update dimensions information in services for a layer */
             dispatch(layerSetDimensions({ service: wmjsLayer.service, name:wmjsLayer.name, dimensions:wmjsLayer.dimensions }));

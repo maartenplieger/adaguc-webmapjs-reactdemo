@@ -36,8 +36,10 @@ const initialState = {
     mapPanel: [
       {
         id: generateMapId(),
-        bbox: [0, 40, 10, 60],
-        srs: 'EPSG:4326',
+        // bbox: [0, 40, 10, 60],
+        // srs: 'EPSG:4326',
+        bbox: [220000, 6500000, 1000000, 7200000],   
+        srs: 'EPSG:3857', 
         baseLayers:[{
           service:'http://geoservices.knmi.nl/cgi-bin/worldmaps.cgi?',
           name:'ne_10m_admin_0_countries_simplified',
@@ -45,6 +47,12 @@ const initialState = {
           keepOnTop:true,
           baseLayer:true,
           id:generateLayerId()
+        }, {
+          id:generateLayerId(),
+          name:'arcGisSat',
+          type:'twms',
+          baseLayer:true,
+          enabled:true
         }
         ],
         layers:[
@@ -52,6 +60,11 @@ const initialState = {
             service:'http://geoservices.knmi.nl/cgi-bin/RADNL_OPER_R___25PCPRR_L3.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetCapabilities',
             name:'RADNL_OPER_R___25PCPRR_L3_KNMI',
             opacity:'0.9',
+            id:generateLayerId()
+          },{
+            service:'http://geoservices.knmi.nl/cgi-bin/HARM_N25.cgi?',
+            name:'precipitation_flux',
+            opacity: 0.9,
             id:generateLayerId()
           }
         ]
