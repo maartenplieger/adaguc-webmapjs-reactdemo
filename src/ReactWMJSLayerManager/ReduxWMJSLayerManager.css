@@ -71,7 +71,8 @@
     display: inline-block;
     position: absolute;
     /* background-color:#05A0B6; */
-    background-color:#0ED3DB;
+    /* background-color:#0ED3DB; */
+    background-color:white;
     
     top:10%;
     height:80%;
