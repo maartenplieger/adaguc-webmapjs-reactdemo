@@ -4,7 +4,7 @@ import { debounce } from 'throttle-debounce';
 import { WMJSMap, WMJSLayer } from 'adaguc-webmapjs';
 import tileRenderSettings from './tilesettings.json';
 import ReactWMJSLayer from './ReactWMJSLayer.jsx';
-import { layerSetStyles, layerChangeStyle } from './ReactWMJSActions';
+import { layerSetStyles, layerChangeStyle, layerSetDimensions } from './ReactWMJSActions';
 import { registerWMJSLayer, getWMJSLayerById, registerWMJSMap } from './ReactWMJSTools.jsx';
 import { parseWMJSLayerAndDispatchActions } from './ReactWMJSParseLayer.jsx';
 import { webMapJSReducer, WEBMAPJS_REDUCERNAME } from './ReactWMJSReducer';
@@ -159,6 +159,7 @@ export default class ReactWMJSMap extends Component {
                     console.log('UPDATE_LAYER: setting name to [' + child.props.name + ']');
                     wmjsLayer.setName(child.props.name); needsRedraw = true;
                     dispatch(layerSetStyles({ service: wmjsLayer.service, name:wmjsLayer.name, styles:wmjsLayer.getStyles() }));
+                    dispatch(layerSetDimensions({ service: wmjsLayer.service, name:wmjsLayer.name, dimensions:wmjsLayer.dimensions, id: wmjsLayer.ReactWMJSLayerId }));
                     dispatch(layerChangeStyle({
                       mapPanelId: this.props.id,
                       service: wmjsLayer.service,

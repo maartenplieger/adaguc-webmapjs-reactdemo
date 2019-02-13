@@ -1,7 +1,9 @@
 import { createStore } from 'redux';
 import { createReducerManager } from './ReducerManager';
 
-const reducerManager = createReducerManager({});
+const rootReducer = (state = {}, action = { type:null }) => { return state; };
+
+const reducerManager = createReducerManager({ root: rootReducer });
 
 /* Create a store with the root reducer function being the one exposed by the manager. */
 const store = createStore(reducerManager.reduce, window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__());

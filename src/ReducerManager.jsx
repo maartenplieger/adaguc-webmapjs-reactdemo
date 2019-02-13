@@ -34,6 +34,7 @@ export function createReducerManager (initialReducers) {
         return false;
       }
       reducers[key] = reducer;
+      console.log('Adding reducer [' + key + ']');
       // Generate a new combined reducer
       combinedReducer = combineReducers(reducers);
       return true;

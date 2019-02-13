@@ -7,7 +7,6 @@ import { webMapJSReducer, WEBMAPJS_REDUCERNAME } from './react-webmapjs/ReactWMJ
 class Content extends Component {
   constructor (props) {
     super(props);
-    console.log('Adding reducer');
     window.reducerManager.add(WEBMAPJS_REDUCERNAME, webMapJSReducer);
   }
   render () {

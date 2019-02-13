@@ -77,38 +77,44 @@ class ReactWMJSLayerRow extends Component {
     const { dispatch, layerIndex } = this.props;
     return (
       <Row>
-        <Col xs='1' style={{ whiteSpace:'no-wrap' }}>
-          {
-            this.renderDelete(
-              this.props.activeMapPanel.layers[layerIndex],
-              () => { dispatch(layerDelete({ mapPanelId:this.props.activeMapPanel.id, layerIndex: layerIndex })); }
-            )
-          }
-          {
-            this.renderEnabled(
-              this.props.activeMapPanel.layers[layerIndex],
-              (enabled) => { dispatch(layerChangeEnabled({ mapPanelId:this.props.activeMapPanel.id, layerIndex: layerIndex, enabled: enabled })); }
-            )
-          }
-          {
-            <DimensionSelector
-              layer={this.props.activeMapPanel.layers[layerIndex]}
-              id={this.props.activeMapPanel.layers[layerIndex].id}
-            />
-          }
-          {/* {
-            this.renderFocus(
-              this.props.activeMapPanel.layers[layerIndex],
-              () => { dispatch(layerFocus({ mapPanelId:this.props.activeMapPanel.id, layerIndex: layerIndex })); }
-            )
-          } */}
-          {
-            <OpacitySelector
-              layer={this.props.activeMapPanel.layers[layerIndex]}
-              mapPanel={this.props.activeMapPanel}
-              id={this.props.activeMapPanel.layers[layerIndex].id}
-            />
-          }
+        <Col xs='2' style={{ whiteSpace:'no-wrap' }}>
+          <Row>
+            <Col xs='4' style={{ whiteSpace:'no-wrap' }}>
+              {
+                this.renderDelete(
+                  this.props.activeMapPanel.layers[layerIndex],
+                  () => { dispatch(layerDelete({ mapPanelId:this.props.activeMapPanel.id, layerIndex: layerIndex })); }
+                )
+              }
+              {
+                this.renderEnabled(
+                  this.props.activeMapPanel.layers[layerIndex],
+                  (enabled) => { dispatch(layerChangeEnabled({ mapPanelId:this.props.activeMapPanel.id, layerIndex: layerIndex, enabled: enabled })); }
+                )
+              }
+              {
+                <OpacitySelector
+                  layer={this.props.activeMapPanel.layers[layerIndex]}
+                  mapPanel={this.props.activeMapPanel}
+                  id={this.props.activeMapPanel.layers[layerIndex].id}
+                />
+              }
+            </Col>
+            <Col xs='8' style={{ textOverflow: 'ellipsis' }}>
+              <DimensionSelector
+                layer={this.props.activeMapPanel.layers[layerIndex]}
+                mapPanel={this.props.activeMapPanel}
+                services={this.props.services}
+                id={this.props.activeMapPanel.layers[layerIndex].id}
+              />
+              {/* {
+                this.renderFocus(
+                  this.props.activeMapPanel.layers[layerIndex],
+                  () => { dispatch(layerFocus({ mapPanelId:this.props.activeMapPanel.id, layerIndex: layerIndex })); }
+                )
+              } */}
+            </Col>
+          </Row>
         </Col>
         <Col xs='2'>
           {
@@ -130,7 +136,7 @@ class ReactWMJSLayerRow extends Component {
             )
           }
         </Col>
-        <Col xs='9'>{ <ReactWMJSTimeSelector
+        <Col xs='8'>{ <ReactWMJSTimeSelector
           layer={this.props.activeMapPanel.layers[layerIndex]}
           activeMapPanel={this.props.activeMapPanel}
           layerManager={this.props.layerManager}

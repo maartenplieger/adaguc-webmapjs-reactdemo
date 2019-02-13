@@ -11,8 +11,6 @@ export const parseWMJSLayerAndDispatchActions = (wmjsLayer, dispatch, mapPanelId
           /* Update list of layers for service */
           let done = (layers) => {
             dispatch(serviceSetLayers({ service:wmjsLayer.service, layers:layers }));
-            // /* Update service information in services */
-            // dispatch(setServiceInformation(service));
             /* Update style information in services for a layer */
             dispatch(layerSetStyles({ service: wmjsLayer.service, name:wmjsLayer.name, styles:wmjsLayer.getStyles() }));
             /* Select first style in service for a layer */
@@ -44,4 +42,4 @@ export const parseWMJSLayerAndDispatchActions = (wmjsLayer, dispatch, mapPanelId
       }
     }, forceRefresh, 'ReactWMJSParseLayer.jsx', xml2jsonrequestURL);
   });
-}
+};
