@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { getWMJSMapById, getWMJSLayerById } from '../react-webmapjs/ReactWMJSTools.jsx';
-import { layerChangeDimension, layerManagerSetTimeResolution, layerManagerSetTimeValue } from '../js/actions/actions.js';
+import { layerManagerSetTimeResolution, layerManagerSetTimeValue } from './LayerManagerActions';
+import { layerChangeDimension } from '../react-webmapjs/ReactWMJSActions';
 import produce from 'immer';
 import { Icon } from 'react-fa';
 import { Button } from 'reactstrap';
-import { timeResolutionSteps, timeResolutionGetIndexForValue } from './TimeResolutionSteps';
 const moment = window.moment;
 
 class ReactWMJSTimeSelector extends Component {
@@ -13,7 +13,7 @@ class ReactWMJSTimeSelector extends Component {
     super(props);
     this.click = this.click.bind(this);
     this.resize = this.resize.bind(this);
-    this.onWheel = this.onWheel.bind(this);
+    // this.onWheel = this.onWheel.bind(this);
     this.timeBlockContainer = React.createRef();
     this.resizeCalled = false;
     this.getTimeDim = this.getTimeDim.bind(this);
@@ -117,38 +117,38 @@ class ReactWMJSTimeSelector extends Component {
       <Icon name='circle-thin' />
     </Button>);
   }
-  onWheel (e) {
-    e.preventDefault();
-    const momentStart = moment.utc(this.props.layerManager.timeStart, 'YYYY-MM-DDTHH:mm:SS');
-    const momentEnd = moment.utc(this.lastFoundTime, 'YYYY-MM-DDTHH:mm:SS');
-    const currentTimeResolution = this.props.layerManager.timeResolution;
-    let index = timeResolutionGetIndexForValue(currentTimeResolution);
-    const { dispatch } = this.props;
-    if (e.deltaY > 1) index++;
-    if (e.deltaY < -1) index--;
-    if (index < 0) index = 0;
-    if (index > timeResolutionSteps.length - 1) index = timeResolutionSteps.length - 1;
-    const newTimeResolution = timeResolutionSteps[index].value;
-    let currentValue = moment.utc(this.props.layerManager.timeValue, 'YYYY-MM-DDTHH:mm:SS');
-    let newStart = currentValue + (((momentStart - currentValue) * newTimeResolution) / currentTimeResolution);
-    let newEnd = currentValue + (((momentEnd - currentValue) * newTimeResolution) / currentTimeResolution);
-    const d = (newEnd - newStart) / 20;
-    if (e.deltaX > 1) {
-      newStart += d;
-      newEnd += d;
-      // this.click(moment.utc(currentValue + d).format('YYYY-MM-DDTHH:mm:SS'));
-    }
-    if (e.deltaX < -1) {
-      newStart -= d;
-      newEnd -= d;
-      // this.click(moment.utc(currentValue - d).format('YYYY-MM-DDTHH:mm:SS'));
-    }
-    dispatch(layerManagerSetTimeResolution({
-      timeResolution: newTimeResolution,
-      timeStart: moment.utc(newStart),
-      timeEnd: moment.utc(newEnd)
-    }));
-  }
+  // onWheel (e) {
+  //   e.preventDefault();
+  //   const momentStart = moment.utc(this.props.layerManager.timeStart, 'YYYY-MM-DDTHH:mm:SS');
+  //   const momentEnd = moment.utc(this.lastFoundTime, 'YYYY-MM-DDTHH:mm:SS');
+  //   const currentTimeResolution = this.props.layerManager.timeResolution;
+  //   let index = timeResolutionGetIndexForValue(currentTimeResolution);
+  //   const { dispatch } = this.props;
+  //   if (e.deltaY > 1) index++;
+  //   if (e.deltaY < -1) index--;
+  //   if (index < 0) index = 0;
+  //   if (index > timeResolutionSteps.length - 1) index = timeResolutionSteps.length - 1;
+  //   const newTimeResolution = timeResolutionSteps[index].value;
+  //   let currentValue = moment.utc(this.props.layerManager.timeValue, 'YYYY-MM-DDTHH:mm:SS');
+  //   let newStart = currentValue + (((momentStart - currentValue) * newTimeResolution) / currentTimeResolution);
+  //   let newEnd = currentValue + (((momentEnd - currentValue) * newTimeResolution) / currentTimeResolution);
+  //   const d = (newEnd - newStart) / 20;
+  //   if (e.deltaX > 1) {
+  //     newStart += d;
+  //     newEnd += d;
+  //     // this.click(moment.utc(currentValue + d).format('YYYY-MM-DDTHH:mm:SS'));
+  //   }
+  //   if (e.deltaX < -1) {
+  //     newStart -= d;
+  //     newEnd -= d;
+  //     // this.click(moment.utc(currentValue - d).format('YYYY-MM-DDTHH:mm:SS'));
+  //   }
+  //   dispatch(layerManagerSetTimeResolution({
+  //     timeResolution: newTimeResolution,
+  //     timeStart: moment.utc(newStart),
+  //     timeEnd: moment.utc(newEnd)
+  //   }));
+  // }
 
   click (value) {
     const dimension = this.timeDimension;
@@ -252,10 +252,9 @@ class ReactWMJSTimeSelector extends Component {
     let lastBlockWidth = 0;
     let hasSelected = false;
     this.previousLastFoundTime = this.lastFoundTime;
-    
     let index = 0;
     do {
-      momentCalls++;      
+      momentCalls++;
       time = time.add(this.props.layerManager.timeResolution, 'second');
       let timeString = time.format('YYYY-MM-DDTHH:mm:SS');
       index = wmjsTimeDimension.getIndexForValue(timeString);
@@ -281,7 +280,7 @@ class ReactWMJSTimeSelector extends Component {
           } else if (timeBlockWidth > 2 * 7) {
             contents = previousTime.format('mm');
           }
-          if (selected) {timeBlockWidth += 2; startX -= 1;}
+          if (selected) { timeBlockWidth += 2; startX -= 1; }
           timeBlockArray.push(<button
             onClick={() => { this.click(wmjsTimeDimension.getValueForIndex(b)); }}
             className={className}
@@ -368,13 +367,13 @@ class ReactWMJSTimeSelector extends Component {
     return (
       <div>
         <div
-          onKeyDown={ this.handleKeyDown }
+          onKeyDown={this.handleKeyDown}
           onWheel={this.handleKeyDown}
           // onWheel={this.onWheel}
           ref={this.timeBlockContainer}
           className='ReduxWMJSLayerManagerTimeSelectorContentRef'>
-          <div className='ReduxWMJSLayerManagerTimeSelectorContent' style={{ width: (this.maxWidth) + 'px' }} 
-            onKeyDown={ this.handleKeyDown }
+          <div className='ReduxWMJSLayerManagerTimeSelectorContent' style={{ width: (this.maxWidth) + 'px' }}
+            onKeyDown={this.handleKeyDown}
             onWheel={this.handleKeyDown}
           />
           {timeBlockArray}

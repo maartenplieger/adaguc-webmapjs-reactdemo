@@ -86,7 +86,7 @@ export const getLayerIndexFromAction = (action, layers) => {
  * @param {array} mapPanels mapPanels of the mappanel in the state.
  */
 export const getMapPanelIndexFromAction = (action, mapPanels) => {
-  if (!action.payload.mapPanelId && !action.payload.mapPanelIndex) {
+  if (!action.payload || (!action.payload.mapPanelId && !action.payload.mapPanelIndex)) {
     console.warn(action.type + ': invalid action payload, either mapPanelId or mapPanelIndex is required', action);
     return null;
   }

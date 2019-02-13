@@ -1,36 +1,26 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Button, Row, Col, Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import { layerChangeName, layerChangeEnabled, layerChangeOpacity, layerChangeStyle, layerManagerToggleLayerSelector,
-  layerManagerToggleStylesSelector, layerManagerToggleOpacitySelector, layerDelete, layerFocus } from '../js/actions/actions.js';
+import { layerManagerToggleLayerSelector, layerManagerToggleStylesSelector } from './LayerManagerActions';
+import { layerChangeName, layerChangeEnabled, layerChangeStyle, layerDelete } from '../react-webmapjs/ReactWMJSActions';
 import { Icon } from 'react-fa';
-import ReactWMJSTimeSelector from './ReactWMJSTimeSelector';
+import ReactWMJSTimeSelector from './TimeSelector';
+import DimensionSelector from './DimensionSelector';
+import OpacitySelector from './OpacitySelector';
 
 class ReactWMJSLayerRow extends Component {
   renderEnabled (layer, enableLayer) {
-    if (!layer) {
-      return (<div>-</div>);
-    }
+    if (!layer) { return (<div>-</div>); }
     let enabled = layer.enabled !== false;
-    return (<Button
-      onClick={(e) => { enableLayer(!enabled); e.stopPropagation(); e.preventDefault(); }}>
-      <Icon name={enabled ? 'eye' : 'eye-slash'} /></Button>);
+    return (<Button onClick={(e) => { enableLayer(!enabled); e.stopPropagation(); e.preventDefault(); }}><Icon name={enabled ? 'eye' : 'eye-slash'} /></Button>);
   }
   renderDelete (layer, deleteLayer) {
-    if (!layer) {
-      return (<div>-</div>);
-    }
-    return (<Button
-      onClick={(e) => { deleteLayer(); e.stopPropagation(); e.preventDefault(); }}>
-      <Icon name={'trash'} /></Button>);
+    if (!layer) { return (<div>-</div>); }
+    return (<Button onClick={(e) => { deleteLayer(); e.stopPropagation(); e.preventDefault(); }}><Icon name={'trash'} /></Button>);
   }
   renderFocus (layer, focusLayer) {
-    if (!layer) {
-      return (<div>-</div>);
-    }
-    return (<Button
-      onClick={(e) => { focusLayer(); e.stopPropagation(); e.preventDefault(); }}>
-      <Icon name={'window-maximize'} /></Button>);
+    if (!layer) { return (<div>-</div>); }
+    return (<Button onClick={(e) => { focusLayer(); e.stopPropagation(); e.preventDefault(); }}><Icon name={'window-maximize'} /></Button>);
   }
 
   renderLayers (services, layer, isOpen, toggle, selectLayer) {
@@ -83,45 +73,11 @@ class ReactWMJSLayerRow extends Component {
     );
   }
 
-  renderOpacity (services, layer, isOpen, toggle, selectOpacity) {
-    let currentOpacity = layer && layer.opacity !== undefined ? layer.opacity : 1.0;
-    let opacities = [
-      { name:0.0, title: '0 %' },
-      { name:0.1, title: '10 %' },
-      { name:0.2, title: '20 %' },
-      { name:0.3, title: '30 %' },
-      { name:0.4, title: '40 %' },
-      { name:0.5, title: '50 %' },
-      { name:0.6, title: '60 %' },
-      { name:0.7, title: '70 %' },
-      { name:0.8, title: '80 %' },
-      { name:0.8, title: '90 %' },
-      { name:1.0, title: '100 %' }
-    ];
-    opacities.reverse();
-    const currentValue = Math.round(currentOpacity * 100) + ' %';
-    return (
-      <Dropdown isOpen={isOpen} toggle={toggle}>
-        <DropdownToggle caret>
-          { currentValue }
-        </DropdownToggle>
-        <DropdownMenu>
-          <DropdownItem header>Select opacity</DropdownItem>
-          {
-            opacities.map((l, i) => {
-              return (<DropdownItem active={l.title === currentValue} key={i} onClick={() => { selectOpacity(l.name); }}>{l.title}</DropdownItem>);
-            })
-          }
-        </DropdownMenu>
-      </Dropdown>
-    );
-  };
-
   render () {
     const { dispatch, layerIndex } = this.props;
     return (
       <Row>
-        <Col xs='1' style={{whiteSpace:'no-wrap'}}>
+        <Col xs='1' style={{ whiteSpace:'no-wrap' }}>
           {
             this.renderDelete(
               this.props.activeMapPanel.layers[layerIndex],
@@ -134,6 +90,12 @@ class ReactWMJSLayerRow extends Component {
               (enabled) => { dispatch(layerChangeEnabled({ mapPanelId:this.props.activeMapPanel.id, layerIndex: layerIndex, enabled: enabled })); }
             )
           }
+          {
+            <DimensionSelector
+              layer={this.props.activeMapPanel.layers[layerIndex]}
+              id={this.props.activeMapPanel.layers[layerIndex].id}
+            />
+          }
           {/* {
             this.renderFocus(
               this.props.activeMapPanel.layers[layerIndex],
@@ -141,13 +103,11 @@ class ReactWMJSLayerRow extends Component {
             )
           } */}
           {
-            this.renderOpacity(
-              this.props.services,
-              this.props.activeMapPanel.layers[layerIndex],
-              this.props.layerManager.layers[layerIndex].opacitySelectorOpen,
-              () => { dispatch(layerManagerToggleOpacitySelector({ layerIndex: layerIndex })); },
-              (opacity) => { dispatch(layerChangeOpacity({ mapPanelId:this.props.activeMapPanel.id, layerIndex: layerIndex, opacity: opacity })); }
-            )
+            <OpacitySelector
+              layer={this.props.activeMapPanel.layers[layerIndex]}
+              mapPanel={this.props.activeMapPanel}
+              id={this.props.activeMapPanel.layers[layerIndex].id}
+            />
           }
         </Col>
         <Col xs='2'>

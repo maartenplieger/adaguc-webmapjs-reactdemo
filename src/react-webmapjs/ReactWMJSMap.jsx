@@ -4,10 +4,10 @@ import { debounce } from 'throttle-debounce';
 import { WMJSMap, WMJSLayer } from 'adaguc-webmapjs';
 import tileRenderSettings from './tilesettings.json';
 import ReactWMJSLayer from './ReactWMJSLayer.jsx';
-import { layerSetStyles, layerChangeStyle } from '../js/actions/actions';
+import { layerSetStyles, layerChangeStyle } from './ReactWMJSActions';
 import { registerWMJSLayer, getWMJSLayerById, registerWMJSMap } from './ReactWMJSTools.jsx';
 import { parseWMJSLayerAndDispatchActions } from './ReactWMJSParseLayer.jsx';
-
+import { webMapJSReducer, WEBMAPJS_REDUCERNAME } from './ReactWMJSReducer';
 let xml2jsonrequestURL = 'http://localhost:10000/XML2JSON?';
 export default class ReactWMJSMap extends Component {
   constructor (props) {
@@ -22,6 +22,7 @@ export default class ReactWMJSMap extends Component {
     this.checkNewProps = this.checkNewProps.bind(this);
     this.checkAdaguc = this.checkAdaguc.bind(this);
     this.currentWMJSProps = {};
+    window.reducerManager.add(WEBMAPJS_REDUCERNAME, webMapJSReducer);
   }
   _handleWindowResize () {
     this.resize();
@@ -111,7 +112,7 @@ export default class ReactWMJSMap extends Component {
             this.checkNewProps(props);
             return;
           }
-        }        
+        }
 
         /* Loop through all layers and update WMJSLayer properties where needed */
         for (let c = 0; c < myChilds.length; c++) {
@@ -145,7 +146,6 @@ export default class ReactWMJSMap extends Component {
                 let wmjsLayer = obj.layer;
                 adagucWMJSLayerIndex++;
                 if (wmjsLayer === null) {
-
                   console.log('new normal layer');
                   wmjsLayer = new WMJSLayer({ ...child.props });
                   registerWMJSLayer(wmjsLayer, child.props.id);
@@ -198,7 +198,7 @@ export default class ReactWMJSMap extends Component {
                         needsRedraw = true;
                       }
                     }
-                  }          
+                  }
                 }
               }
             }

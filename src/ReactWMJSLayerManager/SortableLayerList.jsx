@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactWMJSLayerRow from './ReactWMJSLayerRow';
+import ReactWMJSLayerRow from './LayerRow';
 import { SortableContainer, SortableElement, SortableHandle } from 'react-sortable-hoc';
 import { Icon } from 'react-fa';
 

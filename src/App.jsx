@@ -2,9 +2,9 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { hot } from 'react-hot-loader';
 import style from './styles/main.css'; // eslint-disable-line no-unused-vars
-import style2 from './ReactWMJSLayerManager/ReduxWMJSLayerManager.css'; // eslint-disable-line no-unused-vars
+import style2 from './ReactWMJSLayerManager/WMJSLayerManager.css'; // eslint-disable-line no-unused-vars
 import 'bootstrap/dist/css/bootstrap.min.css';
-import WMJSLayerManager from './ReactWMJSLayerManager/ReduxWMJSLayerManager.jsx';
+import WMJSLayerManager from './ReactWMJSLayerManager/WMJSLayerManager.jsx';
 import TitleBarContainer from './TitleBarContainer';
 import Content from './Content';
 require('./img/adaguc-logo-favicon-16x16.png');

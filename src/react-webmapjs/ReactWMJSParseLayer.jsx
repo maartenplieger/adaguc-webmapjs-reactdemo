@@ -1,5 +1,5 @@
 import WMJSGetServiceFromStore from 'adaguc-webmapjs/src/WMJSGetServiceFromStore';
-import { serviceSetLayers, layerSetStyles, layerSetDimensions, layerChangeStyle, layerChangeDimension } from '../js/actions/actions';
+import { serviceSetLayers, layerSetStyles, layerSetDimensions, layerChangeStyle, layerChangeDimension } from './ReactWMJSActions';
 
 export const parseWMJSLayerAndDispatchActions = (wmjsLayer, dispatch, mapPanelId, xml2jsonrequestURL, forceRefresh = false) => {
   return new Promise((resolve, reject) => {

@@ -1,13 +1,16 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { layerManagerSetNumberOfLayers, layerManagerMoveLayer, layerManagerSetTimeResolution, serviceRefresh } from '../js/actions/actions.js';
-import SortableWMJSReactLayerList from './SortableWMJSReactLayerList.jsx';
+import { layerMoveLayer } from '../react-webmapjs/ReactWMJSActions';
+import SortableWMJSReactLayerList from './SortableLayerList.jsx';
 import { Button, Row, Col, Label } from 'reactstrap';
 import { timeResolutionGetObject, timeResolutionGetIndexForValue, timeResolutionSteps } from './TimeResolutionSteps';
 import { Icon } from 'react-fa';
 import { parseWMJSLayerAndDispatchActions } from '../react-webmapjs/ReactWMJSParseLayer.jsx';
 import { getWMJSMapById } from '../react-webmapjs/ReactWMJSTools.jsx';
+import { WEBMAPJS_REDUCERNAME, webMapJSReducer } from '../react-webmapjs/ReactWMJSReducer';
+import { LAYERMANAGER_REDUCERNAME, layerManagerReducer } from './LayerManagerReducer';
+import { layerManagerSetNumberOfLayers, layerManagerSetTimeResolution } from './LayerManagerActions';
 const moment = window.moment;
 
 class ReactWMJSLayerManager extends Component {
@@ -15,6 +18,8 @@ class ReactWMJSLayerManager extends Component {
     super(props);
     this.onSortEnd = this.onSortEnd.bind(this);
     this.refreshServices = this.refreshServices.bind(this);
+    window.reducerManager.add(WEBMAPJS_REDUCERNAME, webMapJSReducer);
+    window.reducerManager.add(LAYERMANAGER_REDUCERNAME, layerManagerReducer);
   }
 
   componentWillUpdate (nextProps) {
@@ -27,7 +32,7 @@ class ReactWMJSLayerManager extends Component {
   onSortEnd ({ oldIndex, newIndex }) {
     const { dispatch } = this.props;
     const mapPanelId = this.props.activeMapPanel.id;
-    dispatch(layerManagerMoveLayer({ oldIndex, newIndex, mapPanelId }));
+    dispatch(layerMoveLayer({ oldIndex, newIndex, mapPanelId }));
   }
 
   refreshServices () {
@@ -36,7 +41,7 @@ class ReactWMJSLayerManager extends Component {
     wmjsMap.clearImageStore();
     const wmjsLayers = wmjsMap.getLayers();
     for (let d = 0; d < wmjsLayers.length; d++) {
-      parseWMJSLayerAndDispatchActions(wmjsLayers[d], dispatch, activeMapPanel.id, null, true).then(() => {wmjsMap.draw();});
+      parseWMJSLayerAndDispatchActions(wmjsLayers[d], dispatch, activeMapPanel.id, null, true).then(() => { wmjsMap.draw(); });
     }
   }
 
@@ -71,9 +76,9 @@ class ReactWMJSLayerManager extends Component {
                 if (index < timeResolutionSteps.length) { dispatch(layerManagerSetTimeResolution({ timeResolution: timeResolutionSteps[index].value })); }
               }}><Icon name='minus' />
               </Button>
-              <Label style={{width:'7rem', textAlign:'center'}}>{ timeResolutionGetObject(layerManager.timeResolution).title }</Label>
+              <Label style={{ width:'7rem', textAlign:'center' }}>{ timeResolutionGetObject(layerManager.timeResolution).title }</Label>
               <Button disabled={currentTimeResolutionIndex === 0} onClick={() => {
-                const index = currentTimeResolutionIndex - 1; 
+                const index = currentTimeResolutionIndex - 1;
                 if (index >= 0) { dispatch(layerManagerSetTimeResolution({ timeResolution: timeResolutionSteps[index].value })); }
               }}><Icon name='plus' />
               </Button>
@@ -88,11 +93,13 @@ class ReactWMJSLayerManager extends Component {
 };
 
 const mapStateToProps = state => {
-  const activeMapPanelIndex = state.activeMapPanelIndex;
+  /* Return initial state if not yet set */
+  const webMapJSState = state[WEBMAPJS_REDUCERNAME] ? state[WEBMAPJS_REDUCERNAME] : webMapJSReducer();
+  const layerManagerState = state[LAYERMANAGER_REDUCERNAME] ? state[LAYERMANAGER_REDUCERNAME] : layerManagerReducer();
   return {
-    activeMapPanel: state.webmapjs.mapPanel[activeMapPanelIndex],
-    layerManager: state.layerManager,
-    services: state.webmapjs.services
+    activeMapPanel: webMapJSState.webmapjs.mapPanel[webMapJSState.webmapjs.activeMapPanelIndex],
+    layerManager: layerManagerState.layerManager,
+    services: webMapJSState.webmapjs.services
   };
 };
 
