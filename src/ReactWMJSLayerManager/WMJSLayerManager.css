@@ -1,4 +1,3 @@
-
 .ReduxWMJSLayerManagerWrapper {
     display: grid;
     grid-gap: 0px;
@@ -140,6 +139,10 @@
   visibility: visible;
   z-index:2000;
 }
+.ReactWMJSLayerRowTimeBlockSelected .ReactWMJSLayerRowTimeBlockTooltipText {
+  visibility: visible;
+  z-index:2000;
+}
 .ReactWMJSLayerTimeFocusButton{
     z-index: 1001;
     position: absolute;
@@ -253,4 +256,10 @@
 .btn-secondary:hover:hover .ReactWMJSDropDownTooltipText {
   visibility: visible;
   z-index:2000;
+}
+
+.ReduxWMJSLayerManagerContentEmptyLayerText{
+  padding:6px;
+  font-size:14px;
+  font-family: Roboto;
 }

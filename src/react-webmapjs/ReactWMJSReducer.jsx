@@ -7,7 +7,9 @@ import { WEBMAPJS_LAYER_CHANGE_OPACITY,
   WEBMAPJS_SERVICE_LAYER_SET_STYLES,
   WEBMAPJS_SERVICE_LAYER_SET_DIMENSIONS,
   WEBMAPJS_LAYER_DELETE,
-  WEBMAPJS_LAYER_MOVE
+  WEBMAPJS_LAYER_MOVE,
+  WEBMAPJS_SET_LAYERS,
+  WEBMAPJS_SET_FEATURE_LAYERS
 } from './ReactWMJSConstants';
 
 import { generateMapId, generateLayerId, getLayerIndexFromAction, getDimensionIndexFromAction, getMapPanelIndexFromAction } from './ReactWMJSTools.jsx';
@@ -22,7 +24,7 @@ const initialState = {
         id: generateMapId(),
         // bbox: [0, 40, 10, 60],
         // srs: 'EPSG:4326',
-        bbox: [220000, 6500000, 1000000, 7200000],
+        bbox: [-2439977.836801867,2292675.187961922,7220923.985435895,9229121.851961922],
         srs: 'EPSG:3857',
         baseLayers:[{
           service:'http://geoservices.knmi.nl/cgi-bin/worldmaps.cgi?',
@@ -52,7 +54,8 @@ const initialState = {
             opacity: 0.8,
             id:generateLayerId()
           }
-        ]
+        ],          
+        featureLayers:[]
       }, {
         id: generateMapId(),
         baseLayers:[
@@ -65,7 +68,8 @@ const initialState = {
             id:generateLayerId()
           }
         ],
-        layers:[]
+        layers:[],
+        featureLayers:[]
       }
     ]
   }
@@ -142,7 +146,24 @@ export const webMapJSReducer = (state = initialState, action = { type:null }) =>
         }
         draft.webmapjs.services[action.payload.service].layer[action.payload.name].dimensions = dimensions;
       });
+    case WEBMAPJS_SET_LAYERS:
+      const layersWithIds = createLayersWithIds(action.payload.layers);
+      return produce(state, draft => { draft.webmapjs.mapPanel[getMapPanelIndexFromAction(action, state.webmapjs.mapPanel)].layers = layersWithIds; });
+    case WEBMAPJS_SET_FEATURE_LAYERS:
+      const featureLayersWithIds = createLayersWithIds(action.payload.featureLayers);
+      return produce(state, draft => { draft.webmapjs.mapPanel[getMapPanelIndexFromAction(action, state.webmapjs.mapPanel)].featureLayers = featureLayersWithIds; });
     default:
       return state;
+  }
+
+  function createLayersWithIds (layers) {
+    return produce(layers, draft => {
+      for (let j = 0; j < draft.length; j++) {
+        const layer = draft[j];
+        if (!layer.id) {
+          layer.id = generateLayerId();
+        }
+      }
+    });
   }
 };

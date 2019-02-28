@@ -70,9 +70,9 @@ class DimensionSelector extends Component {
     if (!layer || !layer.dimensions) return selectedDims;
     const { dimensions } = layer;
     for (let d = 0; d < dimensions.length; d++) {
-      // if (dimensions[d].name !== 'time') {
+      if (dimensions[d].name !== 'time') {
         selectedDims.push(dimensions[d]);
-      // }
+      }
     }
     selectedDims.sort();
     return selectedDims;
@@ -100,7 +100,6 @@ class DimensionSelector extends Component {
       activeDimName = availableLayerDimensions[0].name;
       selectedDim = wmjsLayer.getDimension(activeDimName);
     }
-
     const currentValue = '(' + (1 + availableLayerDimensions.findIndex((d) => d.name === activeDimName)) + '/' + availableLayerDimensions.length + ') ' + activeDimName || '(0/0) No dimensions';
     const availableDimValues = [];
     if (state.isValueSelectorOpen) {
@@ -109,7 +108,6 @@ class DimensionSelector extends Component {
       }
       availableDimValues.reverse();
     }
-    
     return (
       <Col style={{ padding: 0, margin: 0 }}>
         <Row style={{ padding: 0, margin: 0 }}>
@@ -117,7 +115,9 @@ class DimensionSelector extends Component {
             <DropdownToggle caret>
               <div className={'ReactWMJSDropDown'} >
                 { currentValue }
-                <span className='ReactWMJSDropDownTooltipText'>Select the dimension to adjust, currently it is set to <strong>{ activeDimName }</strong> with value <strong>{selectedDim.currentValue}</strong></span>
+                <span className='ReactWMJSDropDownTooltipText'>
+                  Select the dimension to adjust, currently it is set to <strong>{ activeDimName }</strong> with value <strong>{selectedDim.currentValue}</strong>
+                </span>
               </div>
             </DropdownToggle>
             <DropdownMenu>

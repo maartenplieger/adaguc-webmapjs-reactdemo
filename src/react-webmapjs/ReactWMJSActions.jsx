@@ -7,7 +7,9 @@ import { WEBMAPJS_LAYER_CHANGE_OPACITY,
   WEBMAPJS_SERVICE_LAYER_SET_STYLES,
   WEBMAPJS_SERVICE_LAYER_SET_DIMENSIONS,
   WEBMAPJS_LAYER_DELETE,
-  WEBMAPJS_LAYER_MOVE
+  WEBMAPJS_LAYER_MOVE,
+  WEBMAPJS_SET_LAYERS,
+  WEBMAPJS_SET_FEATURE_LAYERS
 } from './ReactWMJSConstants';
 
 export const layerChangeOpacity = obj => ({ type: WEBMAPJS_LAYER_CHANGE_OPACITY, payload: obj });
@@ -20,5 +22,6 @@ export const layerSetStyles = obj => ({ type: WEBMAPJS_SERVICE_LAYER_SET_STYLES,
 export const layerSetDimensions = obj => ({ type: WEBMAPJS_SERVICE_LAYER_SET_DIMENSIONS, payload: obj });
 export const layerDelete = obj => ({ type: WEBMAPJS_LAYER_DELETE, payload: obj });
 export const layerMoveLayer = obj => ({ type: WEBMAPJS_LAYER_MOVE, payload: obj });
-
+export const setLayers = obj => ({ type: WEBMAPJS_SET_LAYERS, payload: obj });
+export const setFeatureLayers = obj => ({ type: WEBMAPJS_SET_FEATURE_LAYERS, payload: obj });
 // export const layerFocus = obj => ({ type: LAYER_FOCUS, payload: obj });

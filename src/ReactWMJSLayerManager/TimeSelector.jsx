@@ -172,6 +172,10 @@ class ReactWMJSTimeSelector extends Component {
 
   componentDidMount () {
     window.addEventListener('resize', this.resize);
+
+    if (!this.resizeCalled) {
+      this.resize();
+    }
   }
 
   componentDidUpdate () {
@@ -187,7 +191,6 @@ class ReactWMJSTimeSelector extends Component {
         this.layerCurrentValue = moment.utc(wmjsTimeDimension.currentValue, 'YYYY-MM-DDTHH:mm:SS');
         this.layerEndTime = moment.utc(wmjsTimeDimension.getValueForIndex(wmjsTimeDimension.size() - 1), 'YYYY-MM-DDTHH:mm:SS');
         dispatch(layerManagerSetTimeResolution({
-          timeResolution: 60,
           timeStart: moment.utc(this.getLayerManagerStartTime(this.layerEndTime)),
           timeEnd: moment.utc(this.layerEndTime),
           timeValue: moment.utc(this.layerCurrentValue)
@@ -224,6 +227,7 @@ class ReactWMJSTimeSelector extends Component {
     if (!timeDim) return null;
     this.timeDimension = timeDim;
     let wmjsLayer = getWMJSLayerById(layer.id);
+    if (!wmjsLayer) return null;
     const wmjsTimeDimension = wmjsLayer.getDimension(timeDim.name);
     if (!wmjsTimeDimension) return null;
     return wmjsTimeDimension;

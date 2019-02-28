@@ -8,6 +8,7 @@ import { layerSetStyles, layerChangeStyle, layerSetDimensions } from './ReactWMJ
 import { registerWMJSLayer, getWMJSLayerById, registerWMJSMap } from './ReactWMJSTools.jsx';
 import { parseWMJSLayerAndDispatchActions } from './ReactWMJSParseLayer.jsx';
 import { webMapJSReducer, WEBMAPJS_REDUCERNAME } from './ReactWMJSReducer';
+import AdagucMapDraw from './AdagucMapDraw';
 let xml2jsonrequestURL = 'http://localhost:10000/XML2JSON?';
 export default class ReactWMJSMap extends Component {
   constructor (props) {
@@ -16,11 +17,15 @@ export default class ReactWMJSMap extends Component {
       webMapJSCreated:false,
       baseLayers:[]
     };
+    this.state = {
+      featureLayers:[]
+    };
     this.resize = this.resize.bind(this);
     this._handleWindowResize = this._handleWindowResize.bind(this);
     this.drawDebounced = debounce(600, this.drawDebounced);
     this.checkNewProps = this.checkNewProps.bind(this);
     this.checkAdaguc = this.checkAdaguc.bind(this);
+    this.drawFeatures = this.drawFeatures.bind(this);
     this.currentWMJSProps = {};
     window.reducerManager.add(WEBMAPJS_REDUCERNAME, webMapJSReducer);
   }
@@ -89,12 +94,11 @@ export default class ReactWMJSMap extends Component {
   }
 
   checkNewProps (props) {
-    if (!props) return;
+    if (!props) { return; }
     /* Check children */
     if (props.children) {
       const { children, dispatch } = props;
       if (children !== this.currentWMJSProps.children) {
-        this.currentWMJSProps.children = children;
         let wmjsLayers = this.adaguc.webMapJS.getLayers();
         let wmjsBaseLayers = this.adaguc.webMapJS.getBaseLayers();
         let adagucWMJSLayerIndex = 0;
@@ -114,13 +118,19 @@ export default class ReactWMJSMap extends Component {
           }
         }
 
+        this.setState({ featureLayers: myChilds.filter(c => c.props.geojson).map(c => c.props) });
+
         /* Loop through all layers and update WMJSLayer properties where needed */
         for (let c = 0; c < myChilds.length; c++) {
           let child = myChilds[c];
           if (child.type) {
             /* Check layers */
             if (typeof child.type === typeof ReactWMJSLayer) {
+              if (child.props.geojson) {
+                /* Feature layer, these are handled collectively by the setState commando above. */
+              }
               if (child.props.baseLayer) {
+                /* Base layer */
                 let obj = this.getWMJSLayerFromReactLayer(wmjsBaseLayers, child, adagucWMJSBaseLayerIndex);
                 if (obj.layerArrayMutated) {
                   this.checkNewProps(props);
@@ -137,7 +147,8 @@ export default class ReactWMJSMap extends Component {
                   this.adaguc.webMapJS.setBaseLayers(this.adaguc.baseLayers.reverse());
                   needsRedraw = true;
                 }
-              } else {
+              } else if (child.props.service) {
+                /* Standard layer */
                 let obj = this.getWMJSLayerFromReactLayer(wmjsLayers, child, adagucWMJSLayerIndex);
                 if (obj.layerArrayMutated) {
                   this.checkNewProps(props);
@@ -146,7 +157,6 @@ export default class ReactWMJSMap extends Component {
                 let wmjsLayer = obj.layer;
                 adagucWMJSLayerIndex++;
                 if (wmjsLayer === null) {
-                  console.log('new normal layer');
                   wmjsLayer = new WMJSLayer({ ...child.props });
                   registerWMJSLayer(wmjsLayer, child.props.id);
                   wmjsLayer.ReactWMJSLayerId = child.props.id;
@@ -208,6 +218,8 @@ export default class ReactWMJSMap extends Component {
         if (needsRedraw) {
           this.adaguc.webMapJS.draw();
         }
+        /* Childs have been processed */
+        this.currentWMJSProps.children = children;
       }
     }
   }
@@ -244,6 +256,25 @@ export default class ReactWMJSMap extends Component {
       }
     }
   }
+  drawFeatures (featureLayers) {
+    if (!featureLayers) {
+      return null;
+    }
+
+    return featureLayers.map((layer, index) => {
+      return (
+        <div key={index} style={{ display: 'none' }}>
+          <AdagucMapDraw
+            geojson={layer.geojson}
+            isInEditMode={layer.isInEditMode}
+            isInDeleteMode={layer.isInDeleteMode}
+            drawMode={layer.drawMode}
+            webmapjs={this.adaguc.webMapJS}
+          />
+        </div>);
+    });
+  }
+
   render () {
     return (<div className='ReactWMJSMap'
       style={{ height:'100%', width:'100%', border:'none', display:'block', overflow:'hidden' }} >
@@ -261,6 +292,7 @@ export default class ReactWMJSMap extends Component {
         </div>
         <div className='ReactWMJSLayerProps'>
           <div>{this.props.children}</div>
+          <div>{this.drawFeatures(this.state.featureLayers)}</div>
         </div>
       </div>
     </div>);

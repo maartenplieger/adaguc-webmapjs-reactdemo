@@ -2,6 +2,7 @@ import WMJSGetServiceFromStore from 'adaguc-webmapjs/src/WMJSGetServiceFromStore
 import { serviceSetLayers, layerSetStyles, layerSetDimensions, layerChangeStyle, layerChangeDimension } from './ReactWMJSActions';
 
 export const parseWMJSLayerAndDispatchActions = (wmjsLayer, dispatch, mapPanelId, xml2jsonrequestURL, forceRefresh = false) => {
+  // console.log('parseWMJSLayerAndDispatchActions');
   return new Promise((resolve, reject) => {
     wmjsLayer.parseLayer((_layer) => {
       let wmjsLayer = _layer;
@@ -22,7 +23,22 @@ export const parseWMJSLayerAndDispatchActions = (wmjsLayer, dispatch, mapPanelId
             }));
             /* Update dimensions information in services for a layer */
             dispatch(layerSetDimensions({ service: wmjsLayer.service, name:wmjsLayer.name, dimensions:wmjsLayer.dimensions }));
+            let mapNeedsUpdate = false;
             for (let d = 0; d < wmjsLayer.dimensions.length; d++) {
+              /* Try to re-use the dimensionValue selected in the redux state */
+              let reactLayerDimension = { currentValue: null };
+              if (wmjsLayer.reactWebMapJSLayer && wmjsLayer.reactWebMapJSLayer.props.dimensions) {
+                const index = wmjsLayer.reactWebMapJSLayer.props.dimensions.findIndex(dim => dim.name === wmjsLayer.dimensions[d].name);
+                if (index >= 0) { reactLayerDimension = wmjsLayer.reactWebMapJSLayer.props.dimensions[index]; }
+              }
+
+              if (reactLayerDimension.currentValue) {
+                if (reactLayerDimension.currentValue !== wmjsLayer.dimensions[d].currentValue) {
+                  wmjsLayer.dimensions[d].currentValue = reactLayerDimension.currentValue;
+                  mapNeedsUpdate = true;
+                }
+              }
+
               let dimension = {
                 name: wmjsLayer.dimensions[d].name,
                 units: wmjsLayer.dimensions[d].units,
@@ -34,6 +50,11 @@ export const parseWMJSLayerAndDispatchActions = (wmjsLayer, dispatch, mapPanelId
                 layerId:wmjsLayer.ReactWMJSLayerId,
                 dimension:dimension
               }));
+            }
+            if (mapNeedsUpdate) {
+              if (wmjsLayer.parentMaps && wmjsLayer.parentMaps.length > 0) {
+                wmjsLayer.parentMaps[0].draw();
+              }
             }
             resolve();
           };

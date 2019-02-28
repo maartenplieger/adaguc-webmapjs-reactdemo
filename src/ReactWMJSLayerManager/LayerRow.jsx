@@ -75,11 +75,17 @@ class ReactWMJSLayerRow extends Component {
 
   render () {
     const { dispatch, layerIndex } = this.props;
+
+    if (layerIndex > (this.props.activeMapPanel.layers.length - 1) ) {
+      console.error('Trying to add more layers to the layermanager than which are available in the map.');
+      return <div />;
+    }
+
     return (
       <Row>
-        <Col xs='2' style={{ whiteSpace:'no-wrap' }}>
+        <Col xs='2' style={{ whiteSpace:'nowrap' }}>
           <Row>
-            <Col xs='4' style={{ whiteSpace:'no-wrap' }}>
+            <Col xs='4' style={{ whiteSpace:'nowrap' }}>
               {
                 this.renderDelete(
                   this.props.activeMapPanel.layers[layerIndex],

@@ -8,7 +8,7 @@ import {
   LAYER_MANAGER_EMPTY_LAYER
 } from './LayerManagerConstants';
 
-import { WEBMAPJS_LAYER_DELETE } from '../react-webmapjs/ReactWMJSConstants';
+import { WEBMAPJS_LAYER_DELETE, WEBMAPJS_SET_LAYERS } from '../react-webmapjs/ReactWMJSConstants';
 
 const moment = window.moment;
 
@@ -40,19 +40,26 @@ export const layerManagerReducer = (state = initialState, action = { type:null }
           draft.layerManager.layers.push(LAYER_MANAGER_EMPTY_LAYER);
         }
       });
+    case WEBMAPJS_SET_LAYERS:
+      return produce(state, draft => {
+        draft.layerManager.layers.length = 0;
+        for (let j = 0; j < action.payload.layers.length; j++) {
+          draft.layerManager.layers.push(LAYER_MANAGER_EMPTY_LAYER);
+        }
+      });
     case LAYERMANAGER_SET_TIMERESOLUTION:
       return produce(state, draft => {
         // console.log('timeStart', actio/n.payload.timeStart);
-        if (action.payload.timeResolution !== undefined) draft.layerManager.timeResolution = action.payload.timeResolution;
-        const currentTimeResolution = state.layerManager.timeResolution;
-        const newTimeResolution = action.payload.timeResolution;
-        let currentValue = moment.utc(state.layerManager.timeValue, 'YYYY-MM-DDTHH:mm:SS');
-        const momentStart = moment.utc(state.layerManager.timeStart, 'YYYY-MM-DDTHH:mm:SS');
-        const momentEnd = moment.utc(state.layerManager.timeEnd, 'YYYY-MM-DDTHH:mm:SS');
-        let newStart = moment.utc(currentValue + (((momentStart - currentValue) * newTimeResolution) / currentTimeResolution));
-        let newEnd = moment.utc(currentValue + (((momentEnd - currentValue) * newTimeResolution) / currentTimeResolution));
-        if (action.payload.timeStart && action.payload.timeStart.isValid()) draft.layerManager.timeStart = action.payload.timeStart; else draft.layerManager.timeStart = newStart;
-        if (action.payload.timeEnd && action.payload.timeEnd.isValid()) draft.layerManager.timeEnd = action.payload.timeEnd; else draft.layerManager.timeEnd = newEnd;
+        if (action.payload.timeResolution) draft.layerManager.timeResolution = action.payload.timeResolution;
+        // const currentTimeResolution = state.layerManager.timeResolution;
+        // const newTimeResolution = action.payload.timeResolution;
+        // let currentValue = moment.utc(state.layerManager.timeValue, 'YYYY-MM-DDTHH:mm:SS');
+        // const momentStart = moment.utc(state.layerManager.timeStart, 'YYYY-MM-DDTHH:mm:SS');
+        // const momentEnd = moment.utc(state.layerManager.timeEnd, 'YYYY-MM-DDTHH:mm:SS');
+        // // let newStart = moment.utc(currentValue + (((momentStart - currentValue) * newTimeResolution) / currentTimeResolution));
+        // let newEnd = moment.utc(currentValue + (((momentEnd - currentValue) * newTimeResolution) / currentTimeResolution));
+        if (action.payload.timeStart && action.payload.timeStart.isValid()) draft.layerManager.timeStart = action.payload.timeStart;// else draft.layerManager.timeStart = newStart;
+        if (action.payload.timeEnd && action.payload.timeEnd.isValid()) draft.layerManager.timeEnd = action.payload.timeEnd;// else draft.layerManager.timeEnd = newEnd;
         if (action.payload.timeValue && action.payload.timeValue.isValid()) draft.layerManager.timeValue = action.payload.timeValue;
       });
     case LAYERMANAGER_SET_TIMEVALUE:
